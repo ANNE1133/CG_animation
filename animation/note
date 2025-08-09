@@ -1,0 +1,76 @@
+polygon
+// พิกัดมุมทั้งสี่
+int[] xPoints = {1022, 1022, 207, 207};
+int[] yPoints = {29, 688, 29, 688};
+
+g.setColor(new Color(150, 200, 255)); 
+g.fillPolygon(xPoints, yPoints, 4); // วาดสี่เหลี่ยมที่ไม่จำเป็นต้องตั้งฉาก
+
+path 2D
+Path2D.Double quad = new Path2D.Double();
+quad.moveTo(1022, 29);
+quad.lineTo(1022, 688);
+quad.lineTo(207, 688);
+quad.lineTo(207, 29);
+quad.closePath();
+
+g.setColor(new Color(150, 200, 255));
+g.fill(quad);
+
+x=0.5861
+
+// g.setColor(Color.RED); 
+		// g.drawRect(x, y, width, height);
+
+//gradient
+ protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+
+        int x = 50, y = 50, width = 200, height = 200;
+
+        // Define the four corner colors
+        Color topLeft = Color.BLUE;
+        Color topRight = Color.GREEN;
+        Color bottomLeft = Color.RED;
+        Color bottomRight = Color.YELLOW;
+
+        // Create a BufferedImage to hold the gradient
+        BufferedImage gradientImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+
+        // Iterate through each pixel of the rectangle
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                float horizontalRatio = (float) i / (width - 1);
+                float verticalRatio = (float) j / (height - 1);
+
+                // Interpolate horizontally along the top edge
+                int redTop = (int) (topLeft.getRed() * (1 - horizontalRatio) + topRight.getRed() * horizontalRatio);
+                int greenTop = (int) (topLeft.getGreen() * (1 - horizontalRatio) + topRight.getGreen() * horizontalRatio);
+                int blueTop = (int) (topLeft.getBlue() * (1 - horizontalRatio) + topRight.getBlue() * horizontalRatio);
+
+                // Interpolate horizontally along the bottom edge
+                int redBottom = (int) (bottomLeft.getRed() * (1 - horizontalRatio) + bottomRight.getRed() * horizontalRatio);
+                int greenBottom = (int) (bottomLeft.getGreen() * (1 - horizontalRatio) + bottomRight.getGreen() * horizontalRatio);
+                int blueBottom = (int) (bottomLeft.getBlue() * (1 - horizontalRatio) + bottomRight.getBlue() * horizontalRatio);
+
+                // Interpolate vertically to get the final color
+                int finalRed = (int) (redTop * (1 - verticalRatio) + redBottom * verticalRatio);
+                int finalGreen = (int) (greenTop * (1 - verticalRatio) + greenBottom * verticalRatio);
+                int finalBlue = (int) (blueTop * (1 - verticalRatio) + blueBottom * verticalRatio);
+
+                // Set the pixel color in the image
+                Color pixelColor = new Color(finalRed, finalGreen, finalBlue);
+                gradientImage.setRGB(i, j, pixelColor.getRGB());
+            }
+        }
+
+
+
+50 1
+79 2
+
+142
+79
+2 
+114
