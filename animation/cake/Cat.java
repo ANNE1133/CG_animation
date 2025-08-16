@@ -36,8 +36,9 @@ public class Cat {
         Graphics2D gCat = catBuffer.createGraphics();
         gCat.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
-        drawCatFace(gCat, catBuffer);
+        drawStripes(gCat, catBuffer);
         drawCatBody(gCat, catBuffer);
+        drawCatFace(gCat, catBuffer);
         gCat.dispose();
         
         Shape originalClip = g.getClip();
@@ -53,35 +54,57 @@ public class Cat {
     }
     
     private void drawCatFace(Graphics2D g, BufferedImage buffer) {
-        // Eyes
+        // Eyes using Polygon instead of fillOval
+        Polygon leftEye = createEllipsePolygon(224, 240, 26, 34);
+        Polygon rightEye = createEllipsePolygon(303, 247, 30, 36);
+        
         g.setColor(eyeColor);
-        g.fillOval(224, 240, 26, 34);
-        g.fillOval(303, 247, 30, 36);
+        g.fillPolygon(leftEye);
+        g.fillPolygon(rightEye);
+        
+        // Eye highlights using Polygon
+        Polygon leftHighlight = createEllipsePolygon(230, 249, 4, 6);
+        Polygon rightHighlight = createEllipsePolygon(309, 256, 6, 6);
         
         g.setColor(Color.WHITE);
-        g.fillOval(230, 249, 4, 6);
-        g.fillOval(309, 256, 6, 6);
+        g.fillPolygon(leftHighlight);
+        g.fillPolygon(rightHighlight);
 
-        // Eyebrows
+        // Eyebrows using quadratic bezier
         g.setColor(catOutline);
-        g.setStroke(new BasicStroke(3));
         graphicsUtils.quadraticBezier(g, new Point(231, 218), new Point(236, 211), new Point(243, 215));
         graphicsUtils.quadraticBezier(g, new Point(319, 221), new Point(329, 216), new Point(332, 226));
         
-        // Mouth area
+        // Mouth area using Polygon
+        Polygon mouthAreaPolygon = createEllipsePolygon(242, 266, 55, 47);
         g.setColor(mouthArea);
-        g.fillOval(242, 266, 55, 47);
+        g.fillPolygon(mouthAreaPolygon);
 
         drawMouth(g);
         drawNose(g, buffer);
         drawEars(g, buffer);
-        drawStripes(g, buffer);
         drawWhiskers(g);
+    }
+        // Create ellipse as polygon using midpoint ellipse algorithm concept
+    private Polygon createEllipsePolygon(int x, int y, int width, int height) {
+        Polygon polygon = new Polygon();
+        int centerX = x + width / 2;
+        int centerY = y + height / 2;
+        int a = width / 2;
+        int b = height / 2;
+        
+        // Generate ellipse points
+        for (double angle = 0; angle < 2 * Math.PI; angle += 0.1) {
+            int px = (int)(centerX + a * Math.cos(angle));
+            int py = (int)(centerY + b * Math.sin(angle));
+            polygon.addPoint(px, py);
+        }
+        
+        return polygon;
     }
     
     private void drawMouth(Graphics2D g) {
         g.setColor(catOutline);
-        g.setStroke(new BasicStroke(3));
         graphicsUtils.quadraticBezier(g, new Point(287, 294), new Point(276, 305), new Point(268, 293));
         graphicsUtils.quadraticBezier(g, new Point(268, 285), new Point(271, 297), new Point(260, 296));
         graphicsUtils.quadraticBezier(g, new Point(253, 290), new Point(258, 298), new Point(264, 296));
@@ -89,7 +112,6 @@ public class Cat {
     
     private void drawNose(Graphics2D g, BufferedImage buffer) {
         g.setColor(catOutline);
-        g.setStroke(new BasicStroke(3));
         graphicsUtils.quadraticBezier(g, new Point(259, 274), new Point(265, 270), new Point(277, 274));
         graphicsUtils.quadraticBezier(g, new Point(259, 273), new Point(258, 278), new Point(268, 285));
         graphicsUtils.quadraticBezier(g, new Point(268, 285), new Point(280, 276), new Point(276, 274));
@@ -99,7 +121,6 @@ public class Cat {
     
     private void drawEars(Graphics2D g, BufferedImage buffer) {
         g.setColor(catOutline);
-        g.setStroke(new BasicStroke(3));
         graphicsUtils.quadraticBezier(g, new Point(240, 179), new Point(250, 179), new Point(224, 150));
         graphicsUtils.quadraticBezier(g, new Point(351, 189), new Point(362, 168), new Point(382, 159));
         
@@ -112,13 +133,12 @@ public class Cat {
         graphicsUtils.quadraticBezier(g, new Point(213, 175), new Point(214, 142), new Point(224, 150));
         graphicsUtils.quadraticBezier(g, new Point(380, 219), new Point(402, 148), new Point(381, 159));
         
-        graphicsUtils.floodFill(buffer, 227, 171, new Color(0, 0, 0, 0), earDetail);
-        graphicsUtils.floodFill(buffer, 377, 185, new Color(0, 0, 0, 0), earDetail);
+        graphicsUtils.floodFill(buffer, 227, 171, mainFur, earDetail);
+        graphicsUtils.floodFill(buffer, 377, 185, mainFur, earDetail);
     }
     
     private void drawStripes(Graphics2D g, BufferedImage buffer) {
         g.setColor(stripe);
-        g.setStroke(new BasicStroke(3));
         
         graphicsUtils.quadraticBezier(g, new Point(269, 166), new Point(246, 197), new Point(262, 209));
         graphicsUtils.quadraticBezier(g, new Point(278, 165), new Point(261, 195), new Point(263, 209));
@@ -134,16 +154,16 @@ public class Cat {
         graphicsUtils.quadraticBezier(g, new Point(372, 342), new Point(327, 398), new Point(383, 355));
         graphicsUtils.quadraticBezier(g, new Point(357, 328), new Point(310, 372), new Point(367, 337));
         
-        g.drawLine(269, 166, 277, 165);
-        g.drawLine(286, 165, 305, 165);
-        g.drawLine(318, 168, 329, 171);
-        g.drawLine(399, 243, 400, 258);
+        graphicsUtils.bresenhamLine(g, 269, 166, 277, 165);
+        graphicsUtils.bresenhamLine(g, 286, 165, 305, 165);
+        graphicsUtils.bresenhamLine(g, 318, 168, 329, 171);
+        graphicsUtils.quadraticBezier(g, new Point(399, 243), new Point(403, 250), new Point(399, 257));
         graphicsUtils.quadraticBezier(g, new Point(398, 278), new Point(398, 285), new Point(392, 294));
-        g.drawLine(357, 328, 367, 337);
-        g.drawLine(372, 343, 383, 356);
-        g.drawLine(192, 280, 200, 294);
-        g.drawLine(189, 255, 189, 263);
-        g.drawLine(196, 230, 193, 239);
+        graphicsUtils.bresenhamLine(g, 357, 328, 367, 337);
+        graphicsUtils.bresenhamLine(g, 372, 343, 383, 356);
+        graphicsUtils.quadraticBezier(g, new Point(192, 281), new Point(192, 292), new Point(202, 294));
+        graphicsUtils.bresenhamLine(g, 189, 255, 189, 263);
+        graphicsUtils.quadraticBezier(g, new Point(195, 230), new Point(191, 234), new Point(193, 239));
         
         // Fill stripe areas
         graphicsUtils.floodFill(buffer, 263, 186, new Color(0, 0, 0, 0), stripe);
@@ -160,7 +180,6 @@ public class Cat {
     
     private void drawWhiskers(Graphics2D g) {
         g.setColor(catOutline);
-        g.setStroke(new BasicStroke(3));
         graphicsUtils.quadraticBezier(g, new Point(165, 255), new Point(187, 254), new Point(198, 263));
         graphicsUtils.quadraticBezier(g, new Point(166, 280), new Point(183, 274), new Point(199, 278));
         graphicsUtils.quadraticBezier(g, new Point(353, 283), new Point(382, 277), new Point(409, 290));
@@ -169,7 +188,6 @@ public class Cat {
     
     private void drawCatBody(Graphics2D g, BufferedImage buffer) {
         g.setColor(catOutline);
-        g.setStroke(new BasicStroke(3));
         
         graphicsUtils.quadraticBezier(g, new Point(205, 211), new Point(150, 290), new Point(245, 324));
         graphicsUtils.quadraticBezier(g, new Point(204, 211), new Point(185, 68), new Point(266, 167));
@@ -179,7 +197,7 @@ public class Cat {
         graphicsUtils.quadraticBezier(g, new Point(395, 227), new Point(431, 321), new Point(319, 328));
         graphicsUtils.quadraticBezier(g, new Point(352, 322), new Point(408, 371), new Point(389, 384));
         graphicsUtils.quadraticBezier(g, new Point(244, 323), new Point(229, 364), new Point(242, 403));
-        g.drawLine(242, 402, 390, 384);
+        graphicsUtils.bresenhamLine(g, 242, 402, 390, 384);
         graphicsUtils.quadraticBezier(g, new Point(244, 323), new Point(250, 326), new Point(261, 327));
         
         g.setColor(chest);
@@ -214,7 +232,6 @@ public class Cat {
     
     private void drawHandDetails(Graphics2D g, BufferedImage buffer, boolean isLeft) {
         g.setColor(catOutline);
-        g.setStroke(new BasicStroke(3));
         
         if (isLeft) {
             graphicsUtils.quadraticBezier(g, new Point(247, 342), new Point(237, 327), new Point(215, 337));
@@ -224,7 +241,7 @@ public class Cat {
             graphicsUtils.quadraticBezier(g, new Point(220, 350), new Point(212, 367), new Point(223, 369));
             graphicsUtils.quadraticBezier(g, new Point(235, 352), new Point(228, 375), new Point(241, 366));
             graphicsUtils.quadraticBezier(g, new Point(248, 364), new Point(262, 358), new Point(247, 341));
-            g.drawLine(245, 361, 248, 364);
+            graphicsUtils.bresenhamLine(g, 245, 361, 248, 364);
             
             graphicsUtils.floodFill(buffer, 230, 350, new Color(0, 0, 0, 0), mainFur);
             graphicsUtils.floodFill(buffer, 232, 372, new Color(0, 0, 0, 0), paw);

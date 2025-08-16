@@ -3,7 +3,6 @@ package cake;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +15,7 @@ public class Egg extends JPanel {
     private final Color eggInside = new Color(251, 211, 140);
     private final Color eggDetail = new Color(235, 165, 76);
     private final Color eggBack = new Color(203, 156, 102);
+    private final Color eggLine = new Color(255, 232, 159);
     
     // Animation
     private final long startTime;
@@ -86,19 +86,7 @@ public class Egg extends JPanel {
         }
         return 0;
     }
-    
-    // private void drawWholeEgg(Graphics2D g, BufferedImage buffer, double angle) {
-    //     int pivotX = 305;
-    //     int pivotY = 490;
-        
-    //     AffineTransform originalTransform = g.getTransform();
-    //     g.rotate(angle, pivotX, pivotY);
-        
-    //     drawEggOutline(g);
-    //     graphicsUtils.floodFill(buffer, 350, 300, Color.WHITE, eggFill);
-        
-    //     g.setTransform(originalTransform);
-    // }
+
     public void drawWholeEgg(Graphics2D g, BufferedImage buffer, double angle) {
         int pivotX = 305;
         int pivotY = 490;
@@ -106,37 +94,75 @@ public class Egg extends JPanel {
         AffineTransform originalTransform = g.getTransform();
         g.rotate(angle, pivotX, pivotY);
         
-        // วิธีใหม่ - ไม่ต้องใช้ floodFill
-        Path2D.Double eggPath = createEggPath();
+        // Create egg shape using Polygon
+        Polygon eggPolygon = createEggPolygon();
         
-        // วาดพื้นสีก่อน
+        // Fill egg using Polygon
         g.setColor(eggFill);
-        g.fill(eggPath);
+        g.fillPolygon(eggPolygon);
+
+        shadowEggCustom(g, buffer);
         
-        // วาดขอบทับ
+        // Draw outline using Polygon
         g.setColor(eggOutline);
-        g.setStroke(new BasicStroke(3));
-        g.draw(eggPath);
+        g.drawPolygon(eggPolygon);
         
         g.setTransform(originalTransform);
     }
         
-    private Path2D.Double createEggPath() {
-        Path2D.Double path = new Path2D.Double();
+    private Polygon createEggPolygon() {
+        Polygon polygon = new Polygon();
         
-        path.moveTo(237, 214);
-        path.quadTo(299, 151, 372, 213);
-        path.quadTo(415, 250, 430, 304);
-        path.quadTo(446, 356, 439, 396);
-        path.quadTo(436, 447, 386, 489);
-        path.quadTo(305, 545, 229, 493);
-        path.quadTo(173, 455, 168, 395);
-        path.quadTo(154, 283, 237, 214);
-        path.closePath();
+        // Create egg shape using bezier curves and convert to polygon points
+        List<Point> points = new ArrayList<>();
         
-        return path;
+        // Add points from bezier curves
+        addBezierPointsToList(points, new Point(237, 214), new Point(299, 151), new Point(372, 213));
+        addBezierPointsToList(points, new Point(372, 213), new Point(415, 250), new Point(430, 304));
+        addBezierPointsToList(points, new Point(430, 304), new Point(446, 356), new Point(439, 396));
+        addBezierPointsToList(points, new Point(439, 396), new Point(436, 447), new Point(386, 489));
+        addBezierPointsToList(points, new Point(386, 489), new Point(305, 545), new Point(229, 493));
+        addBezierPointsToList(points, new Point(229, 493), new Point(173, 455), new Point(168, 395));
+        addBezierPointsToList(points, new Point(168, 395), new Point(154, 283), new Point(237, 214));
+        
+        for (Point p : points) {
+            polygon.addPoint(p.x, p.y);
+        }
+        
+        return polygon;
+    }
+
+    private void addBezierPointsToList(List<Point> points, Point p0, Point p1, Point p2) {
+        for (double t = 0; t <= 1; t += 0.02) {
+            double x = (1-t)*(1-t)*p0.x + 2*(1-t)*t*p1.x + t*t*p2.x;
+            double y = (1-t)*(1-t)*p0.y + 2*(1-t)*t*p1.y + t*t*p2.y;
+            points.add(new Point((int)Math.round(x), (int)Math.round(y)));
+        }
     }
     
+    private void shadowEggCustom(Graphics2D g, BufferedImage buffer) {
+        // Create shadow area using Polygon
+        Polygon shadowPolygon = new Polygon();
+        List<Point> shadowPoints = new ArrayList<>();
+        
+        addBezierPointsToList(shadowPoints, new Point(240, 265), new Point(228, 261), new Point(240, 240));
+        addBezierPointsToList(shadowPoints, new Point(240, 240), new Point(253, 218), new Point(271, 227));
+        addBezierPointsToList(shadowPoints, new Point(271, 227), new Point(265, 242), new Point(260, 256));
+        addBezierPointsToList(shadowPoints, new Point(260, 256), new Point(250, 267), new Point(240, 265));
+        
+        for (Point p : shadowPoints) {
+            shadowPolygon.addPoint(p.x, p.y);
+        }
+        
+        // Fill shadow area using Polygon
+        g.setColor(eggLine);
+        g.fillPolygon(shadowPolygon);
+        
+        // Draw small shadow circle using midpoint algorithm
+        g.setColor(eggLine);
+        graphicsUtils.plotCircle(g, 231, 273, 4, 0); // Using existing midpoint circle method
+    }
+
     private void drawCrackedEgg(Graphics2D g, long elapsed, BufferedImage buffer, double angle) {
         int pivotX = 305;
         int pivotY = 490;
@@ -144,8 +170,16 @@ public class Egg extends JPanel {
         AffineTransform originalTransform = g.getTransform();
         g.rotate(angle, pivotX, pivotY);
         
-        drawEggOutline(g);
-        graphicsUtils.floodFill(buffer, 350, 300, Color.WHITE, eggFill);
+                // Draw egg shape using Polygon
+        Polygon eggPolygon = createEggPolygon();
+        g.setColor(eggFill);
+        g.fillPolygon(eggPolygon);
+        
+        shadowEggCustom(g, buffer);
+        
+        g.setColor(eggOutline);
+        g.drawPolygon(eggPolygon);
+
         drawCracks(g, elapsed);
         
         g.setTransform(originalTransform);
@@ -176,18 +210,67 @@ public class Egg extends JPanel {
     }
     
     private void drawBackEgg(Graphics2D g, BufferedImage buffer) {
-        g.setColor(eggOutline);
-        g.setStroke(new BasicStroke(3));
+        // g.setColor(eggOutline);
+        // g.setStroke(new BasicStroke(3));
 
+        // drawCracks(g, Long.MAX_VALUE);
+        
+        // graphicsUtils.quadraticBezier(g, new Point(181, 297), new Point(194, 320), new Point(200, 328));
+        // graphicsUtils.quadraticBezier(g, new Point(199, 328), new Point(226, 301), new Point(241, 299));
+        // graphicsUtils.quadraticBezier(g, new Point(425, 291), new Point(399, 315), new Point(395, 324));
+        // graphicsUtils.quadraticBezier(g, new Point(395, 324), new Point(373, 296), new Point(347, 297));
+        // g.drawLine(240, 299, 348, 297);
+        
+        // graphicsUtils.floodFill(buffer, 390, 332, Color.WHITE, eggBack);
+        Polygon backEggPolygon = createBackEggPolygon();
+        
+        // Fill back egg using Polygon
+        g.setColor(eggBack);
+        g.fillPolygon(backEggPolygon);
+        
+        // Draw cracks
         drawCracks(g, Long.MAX_VALUE);
         
-        graphicsUtils.quadraticBezier(g, new Point(181, 297), new Point(194, 320), new Point(200, 328));
-        graphicsUtils.quadraticBezier(g, new Point(199, 328), new Point(226, 301), new Point(241, 299));
-        graphicsUtils.quadraticBezier(g, new Point(425, 291), new Point(399, 315), new Point(395, 324));
-        graphicsUtils.quadraticBezier(g, new Point(395, 324), new Point(373, 296), new Point(347, 297));
-        g.drawLine(240, 299, 348, 297);
+        // Draw outline using Polygon
+        g.setColor(eggOutline);
+        g.drawPolygon(backEggPolygon);
+    }
+
+    private Polygon createBackEggPolygon() {
+        Polygon polygon = new Polygon();
+        List<Point> points = new ArrayList<>();
         
-        graphicsUtils.floodFill(buffer, 390, 332, Color.WHITE, eggBack);
+        // Convert the complex back egg path to discrete points using bezier
+        addBezierPointsToList(points, new Point(314, 440), new Point(148, 490), new Point(181, 297));
+        points.add(new Point(200, 328));
+        addBezierPointsToList(points, new Point(199, 328), new Point(226, 301), new Point(241, 299));
+        points.add(new Point(240, 299));
+        points.add(new Point(348, 297));
+        points.add(new Point(347, 297));
+        addBezierPointsToList(points, new Point(347, 297), new Point(373, 296), new Point(395, 324));
+        addBezierPointsToList(points, new Point(395, 324), new Point(399, 315), new Point(425, 291));
+        points.add(new Point(425, 292));
+        addBezierPointsToList(points, new Point(425, 292), new Point(449, 436), new Point(313, 441));
+        points.add(new Point(314, 440));
+        
+        for (Point p : points) {
+            polygon.addPoint(p.x, p.y);
+        }
+        
+        return polygon;
+    }
+    
+    private void drawCracks(Graphics2D g, long elapsed) {
+        int totalTime = 3000;
+        int segmentsToShow = (int)((elapsed - 1000) / (float)totalTime * crackSegments.size());
+        segmentsToShow = Math.min(segmentsToShow, crackSegments.size());
+
+        g.setColor(eggOutline);
+        for (int i = 0; i < segmentsToShow; i++) {
+            Point[] seg = crackSegments.get(i);
+            // Use Bresenham line algorithm from GraphicsUtils
+            graphicsUtils.bresenhamLine(g, seg[0].x, seg[0].y, seg[1].x, seg[1].y);
+        }
     }
     
     private void drawEggOutline(Graphics2D g) {
@@ -203,22 +286,22 @@ public class Egg extends JPanel {
         graphicsUtils.quadraticBezier(g, new Point(237, 214), new Point(154, 283), new Point(168, 396));
     }
     
-    private void drawCracks(Graphics2D g, long elapsed) {
-        int totalTime = 3000;
-        int segmentsToShow = (int)((elapsed - 1000) / (float)totalTime * crackSegments.size());
-        segmentsToShow = Math.min(segmentsToShow, crackSegments.size());
+    // private void drawCracks(Graphics2D g, long elapsed) {
+    //     int totalTime = 3000;
+    //     int segmentsToShow = (int)((elapsed - 1000) / (float)totalTime * crackSegments.size());
+    //     segmentsToShow = Math.min(segmentsToShow, crackSegments.size());
 
-        g.setColor(eggOutline);
-        g.setStroke(new BasicStroke(3));
-        for (int i = 0; i < segmentsToShow; i++) {
-            Point[] seg = crackSegments.get(i);
-            g.drawLine(seg[0].x, seg[0].y, seg[1].x, seg[1].y);
-        }
-    }
+    //     g.setColor(eggOutline);
+    //     g.setStroke(new BasicStroke(3));
+    //     for (int i = 0; i < segmentsToShow; i++) {
+    //         Point[] seg = crackSegments.get(i);
+    //         g.drawLine(seg[0].x, seg[0].y, seg[1].x, seg[1].y);
+    //     }
+    // }
     
     private void drawTopHalfEgg(Graphics2D g, BufferedImage buffer) {
         g.setColor(eggOutline);
-        g.setStroke(new BasicStroke(3));
+        // g.setStroke(new BasicStroke(3));
         
         graphicsUtils.quadraticBezier(g, new Point(237, 214), new Point(299, 151), new Point(372, 213));
         graphicsUtils.quadraticBezier(g, new Point(237, 214), new Point(202, 242), new Point(181, 296));
@@ -226,11 +309,14 @@ public class Egg extends JPanel {
         
         drawCracks(g, Long.MAX_VALUE);
         graphicsUtils.floodFill(buffer, 300, 250, new Color(0, 0, 0, 0), eggFill);
+        
+        shadowEggCustom(g, buffer);
     }
+
     
     private void drawBottomHalfEgg(Graphics2D g, BufferedImage buffer) {
         g.setColor(eggOutline);
-        g.setStroke(new BasicStroke(3));
+        // g.setStroke(new BasicStroke(3));
         
         graphicsUtils.quadraticBezier(g, new Point(229, 493), new Point(305, 545), new Point(387, 488));
         graphicsUtils.quadraticBezier(g, new Point(168, 395), new Point(173, 455), new Point(229, 493));
@@ -241,23 +327,29 @@ public class Egg extends JPanel {
         
         drawCracks(g, Long.MAX_VALUE);
         
+        // g.setColor(eggInside);
+        // graphicsUtils.quadraticBezier(g, new Point(174, 419), new Point(303, 536), new Point(364, 382));
+        // graphicsUtils.floodFill(buffer, 177, 381, new Color(0, 0, 0, 0), eggInside);
+
+        // drawEggDetails(g);
+        // graphicsUtils.floodFill(buffer, 191, 445, new Color(0, 0, 0, 0), eggFill);
         g.setColor(eggInside);
         graphicsUtils.quadraticBezier(g, new Point(174, 419), new Point(303, 536), new Point(364, 382));
         graphicsUtils.floodFill(buffer, 177, 381, new Color(0, 0, 0, 0), eggInside);
-
-        drawEggDetails(g);
         graphicsUtils.floodFill(buffer, 191, 445, new Color(0, 0, 0, 0), eggFill);
+        
+        drawEggDetails(g);
     }
     
     private void drawEggDetails(Graphics2D g) {
         g.setColor(eggDetail);
         g.setStroke(new BasicStroke(3));
-        g.drawLine(262, 389, 258, 408);
-        g.drawLine(244, 421, 259, 403);
-        g.drawLine(249, 415, 258, 438);
+        graphicsUtils.bresenhamLine(g, 261, 390, 258, 408);
+        graphicsUtils.bresenhamLine(g, 244, 421, 259, 403);
+        graphicsUtils.bresenhamLine(g, 249, 415, 258, 438);
         graphicsUtils.quadraticBezier(g, new Point(365, 385), new Point(369, 410), new Point(356, 427));
-        g.drawLine(365, 402, 377, 408);
-        g.drawLine(377, 407, 382, 423);
+        graphicsUtils.bresenhamLine(g, 365, 402, 377, 408);
+        graphicsUtils.bresenhamLine(g, 377, 407, 382, 423);
         graphicsUtils.quadraticBezier(g, new Point(356, 427), new Point(360, 431), new Point(360, 443));
     }
     

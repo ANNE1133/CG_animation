@@ -83,7 +83,7 @@ public class GraphicsUtils {
         return m;
     }
 
-    private void bresenhamLine(Graphics g, int x1, int y1, int x2, int y2) {
+    public void bresenhamLine(Graphics g, int x1, int y1, int x2, int y2) {
         int dx = Math.abs(x2 - x1);
         int dy = Math.abs(y2 - y1);
 
@@ -105,7 +105,7 @@ public class GraphicsUtils {
         int x = x1;
 
         for (int i = 0; i < dx; i++) {
-            plot(g, x, y, 2);
+            plot(g, x, y, 3);
             if (D >= 0) {
                 if (isSwap) {
                     x+= sx;
@@ -123,7 +123,7 @@ public class GraphicsUtils {
             D += 2 * dy;
         }
     }
-        private void midpointCircle(Graphics g, int xc, int yc, int r) {
+    private void midpointCircle(Graphics g, int xc, int yc, int r) {
         int x = 0;
         int y = r;
         int Dx = 2 * x;
@@ -201,4 +201,5 @@ public class GraphicsUtils {
         plot(g, xc - x, yc - y,3);
         plot(g, xc - x, yc + y,3); 
     }
+
 }
