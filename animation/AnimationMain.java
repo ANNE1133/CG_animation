@@ -1,16 +1,16 @@
-package Cat5sec.animation;
-
 import java.awt.*;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import cake.Background;
+
 public class AnimationMain extends JPanel {
 
     private Background background;
     private Cat cat;
-    private Light light;
+    // private Light light;
 
     public AnimationMain() {
         // สร้าง object แต่ละตัว

@@ -1,5 +1,4 @@
-package Cat5sec.animation;
-
+package cake;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.*;
@@ -8,7 +7,6 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.*;
-
 public class Background extends JPanel implements ActionListener {
     
     private static final int W = 600, H = 600;
@@ -49,12 +47,139 @@ public class Background extends JPanel implements ActionListener {
         drawCurtain(g);
         drawChandeliersAndSconces(g);// เรียกเมธอดวาดหลอดไฟ
 		drawTable(g,94,345);
+		drawLamp(g);
+		drawChair(g);
     }
     
+	private void drawChair(Graphics2D g) {
+
+		Path2D path2 = new Path2D.Double();
+		path2.moveTo(0, 366);
+		path2.curveTo(20, 375, 10, 395, 15, 399);
+		path2.lineTo(0,400);
+		path2.lineTo(0,366);
+		path2.closePath();
+		g.setColor(new Color(70, 68, 74));
+		g.fill(path2);
+
+
+		g.setColor(new Color(164, 67, 8));
+
+		Path2D path3 = new Path2D.Double();
+		path3.moveTo(17, 412);
+		path3.curveTo(15, 450, 25, 450,27, 412);
+		path3.moveTo(80, 412);
+		path3.curveTo(75, 450, 90, 450,88, 410);
+		path3.closePath();
+		g.fill(path3);
+
+		path3.moveTo(0, 401);
+		path3.curveTo(125,390,125,417,0,411);
+		path3.closePath();
+		g.fill(path3);
+
+		path3.moveTo(0, 353);
+		path3.curveTo(33, 365, 23, 390, 28, 399);
+		path3.lineTo(17, 399);
+		path3.curveTo(10, 395,20, 375, 0, 366);
+		path3.closePath();
+		g.fill(path3);
+
+		Path2D path1 = new Path2D.Double();
+		path1.moveTo(0, 290);
+		path1.quadTo(35,300,37,348);
+		path1.quadTo(104,335,87,380);
+		path1.quadTo(90,370,82,376);
+		path1.quadTo(79,370,80,384);
+		path1.quadTo(105,395,93,401);
+		path1.lineTo(30, 400);
+		path1.curveTo(23, 390,33, 365,  0, 353);
+		path1.lineTo(0,352);
+		path1.closePath();
+		g.setColor(new Color(70, 68, 74));
+		g.fill(path1);
+
+		Path2D path = new Path2D.Double();
+		g.setColor(new Color(97, 64, 54));
+		path.moveTo(0, 290);
+		path.quadTo(35,300,37,348);
+		path.moveTo(30, 371);
+		path.quadTo(33,352,37,348);
+		path.quadTo(84,345,86,351);
+		path.quadTo(95,372,80,378);
+		path.quadTo(67,364,74,352);
+		path.moveTo(23, 373);
+		path.quadTo(61,370,79,380);
+		path.quadTo(79,370,79,386);
+		path.moveTo(25, 385);
+		path.quadTo(105,384,93,401);
+		path.lineTo(0, 399);
+		path.moveTo(90, 402);
+		path.quadTo(105,415,0,411);
+		path.moveTo(0, 353);
+		path.curveTo(33, 365, 23, 390, 28, 399);
+		path.moveTo(0, 366);
+		path.curveTo(20, 375, 10, 395, 15, 399);
+		path.moveTo(17, 412);
+		path.curveTo(15, 450, 25, 450,27, 412);
+		path.moveTo(80, 412);
+		path.curveTo(75, 450, 90, 450,88, 410);
+		g.draw(path);
+
+	}
+	private void drawLamp(Graphics2D g) {
+        // Draw lampshade top
+		Path2D path = new Path2D.Double();
+		g.setColor(new Color(255, 176, 24));
+		path.moveTo(68, 224);
+		path.lineTo(105, 224);
+		path.lineTo(123, 282);
+		path.quadTo(80,290,48, 282);
+		path.closePath();
+		g.fill(path);
+
+		Path2D path2 = new Path2D.Double();
+		path2.moveTo(71, 226);
+		path2.lineTo(103, 226);
+		path2.lineTo(120, 278);
+		path2.quadTo(80,290,51, 278);
+		path2.closePath();
+		g.setStroke(new BasicStroke(6));
+        g.setColor(new Color(243, 104, 11));
+		g.draw(path2);
+
+		g.setStroke(new BasicStroke(2));
+		g.drawLine(82, 226, 74, 279);
+		g.drawLine(92, 226, 97, 279);
+
+		Path2D path3 = new Path2D.Double();
+		path3.moveTo(69, 223);
+		path3.lineTo(105, 223);
+		path3.lineTo(123, 281);
+		path3.quadTo(80,295,47, 281);
+		path3.closePath();
+		g.setStroke(new BasicStroke(1.5f));
+        g.setColor(new Color(182, 70, 8));
+		g.draw(path3);
+        
+		Path2D path4 = new Path2D.Double();
+		path4.moveTo(90, 288);
+		path4.curveTo(85,295,95,295,90, 307);
+		path4.lineTo(98, 340);
+		path4.lineTo(71, 340);
+		path4.lineTo(81, 307);
+		path4.curveTo(74,295,86,300, 82, 288);
+		path4.closePath();
+        g.setColor(new Color(243, 104, 11));
+		g.fill(path4);
+		g.setColor(new Color(182, 70, 8));
+		g.setStroke(new BasicStroke(1.5f));
+		g.draw(path4);
+
+	}
 	private void drawTable(Graphics2D g, int x, int y) {
         int tableTopWidth = 80;
 		int tableTopHeight = 10;
-		int legWidth = 14;
 		int legHeight = 60;
 		int baseWidth = 80;
 		int baseHeight = 10;
@@ -94,23 +219,16 @@ public class Background extends JPanel implements ActionListener {
 		g.draw(tableTop);
 
 		// วาดขาโต๊ะ (Leg)
-		g.setColor(tableTopColor);
-		g.fill(new Rectangle2D.Double(x - legWidth / 2, y+10 + tableTopHeight / 2, legWidth, legHeight));
-
 		g.setColor(outerColor);
-		g.draw(new Rectangle2D.Double(x - legWidth / 2, y+10 + tableTopHeight / 2, legWidth, legHeight));
-		// // วาดฐานของโต๊ะด้วย RoundRectangle2D.Double
-		// g.setColor(tableTopColor);
-		// RoundRectangle2D base = new RoundRectangle2D.Double(
-		// 	x - baseWidth / 2, 
-		// 	y + tableTopHeight / 2 + legHeight, 
-		// 	baseWidth, 
-		// 	baseHeight, 
-		// 	cornerArc, 
-		// 	cornerArc
-		// );
-		// g.fill(base);
-		
+		Path2D path3 = new Path2D.Double();
+		path3.moveTo(126, 361);
+		path3.curveTo(126, 440, 118, 440, 112, 361);
+		path3.lineTo(126, 361);
+		path3.closePath();
+		g.draw(path3);
+		g.setColor(tableTopColor);
+		g.fill(path3);
+
 		// วาดเงาเพื่อเพิ่มมิติ
 		Color shadowColor = new Color(0, 0, 0, 80);
 		g.setColor(shadowColor);
@@ -124,12 +242,12 @@ public class Background extends JPanel implements ActionListener {
 		);
 		g.fill(shadow);
 	}
-		private void drawChandeliersAndSconces(Graphics2D g) {
-        // chandelier top center
-        drawChandelier(g, 206, 200, 3, 0);
+	private void drawChandeliersAndSconces(Graphics2D g) {
+	// chandelier top center
+		drawChandelier(g, 206, 200, 3, 0);
 		drawChandelier(g, 558, 200, 3, 0);
 		drawChandelier(g, 460, 56, 4, 0);
-    }
+	}
 
     private void drawChandelier(Graphics2D g, int x, int y, int arms, int seed) {
         // central bar
