@@ -82,4 +82,123 @@ public class GraphicsUtils {
         }
         return m;
     }
+
+    private void bresenhamLine(Graphics g, int x1, int y1, int x2, int y2) {
+        int dx = Math.abs(x2 - x1);
+        int dy = Math.abs(y2 - y1);
+
+        int sx = (x1 < x2) ? 1 : -1;
+        int sy = (y1 < y2) ? 1 : -1;
+        boolean isSwap = false;
+
+
+        if (dy > dx) {
+            int temp = dx;
+            dx = dy;
+            dy = temp;
+            isSwap = true;
+        }
+
+        int D = 2 * dy - dx;
+
+        int y = y1;
+        int x = x1;
+
+        for (int i = 0; i < dx; i++) {
+            plot(g, x, y, 2);
+            if (D >= 0) {
+                if (isSwap) {
+                    x+= sx;
+                } else {
+                    y += sy;
+                }
+
+                D -= 2 * dx;
+            }
+            if (isSwap) {
+                y += sy;
+            } else {
+                x += sx;
+            }
+            D += 2 * dy;
+        }
+    }
+        private void midpointCircle(Graphics g, int xc, int yc, int r) {
+        int x = 0;
+        int y = r;
+        int Dx = 2 * x;
+        int Dy = 2 * y;
+        int D = 1 - r;
+
+        while (x <= y) {
+            plotCircle(g, xc, yc, x, y);
+
+            x++;
+            Dx = Dx + 2;
+            D = D + Dx + 1;
+
+            if (D >= 0){
+                y = y - 1;
+                Dy = Dy - 2;
+                D = D - Dy;
+            }
+        }
+    }
+
+    private void midpointEllipse(Graphics g, int xc, int yc, int a, int b) {
+        int a2 = a*a, b2 = b*b;
+        int twoA2 = 2*a2, twoB2 = 2*b2;
+
+        //Region1
+        int x = 0;
+        int y = b;
+        int D = Math.round(b2 - (a2*b) + (a2/4));
+
+        while (b2*x <= a2*y) {
+            plotEllipse(g, xc, yc, x, y);
+
+            x++;
+            D = D + (twoB2*x) + b2;
+
+            if (D >= 0){
+                y = y - 1;
+                D = D - (twoA2*y);
+            }
+        }
+
+        //Region2
+        x = a;
+        y = 0;
+        D = Math.round(a2 - (b2*a) + (b2/4));
+
+        while (b2*x >= a2*y) {
+            plotEllipse(g, xc, yc, x, y);
+
+            y++;
+            D = D + (twoA2*y) + a2;
+
+            if (D >= 0){
+                x = x - 1;
+                D = D - (twoB2*x);
+            }
+        }
+    }
+
+    public void plotCircle(Graphics g, int xc, int yc, int x, int y) {
+        plot(g, xc + x, yc + y,3);
+        plot(g, xc + y, yc + x,3);
+        plot(g, xc + y, yc - x,3);
+        plot(g, xc + x, yc - y,3);
+        plot(g, xc - x, yc - y,3);
+        plot(g, xc - y, yc - x,3);
+        plot(g, xc - y, yc + x,3);
+        plot(g, xc - x, yc + y,3); 
+    }
+
+        public void plotEllipse(Graphics g, int xc, int yc, int x, int y) {
+        plot(g, xc + x, yc + y,3);
+        plot(g, xc + x, yc - y,3);
+        plot(g, xc - x, yc - y,3);
+        plot(g, xc - x, yc + y,3); 
+    }
 }
