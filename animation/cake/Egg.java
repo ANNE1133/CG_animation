@@ -105,7 +105,8 @@ public class Egg extends JPanel {
         
         // Draw outline using Polygon
         g.setColor(eggOutline);
-        g.drawPolygon(eggPolygon);
+        // g.drawPolygon(eggPolygon);
+        graphicsUtils.drawThickPolygonOutline(g, eggPolygon, 2);
         
         g.setTransform(originalTransform);
     }
@@ -178,7 +179,8 @@ public class Egg extends JPanel {
         shadowEggCustom(g, buffer);
         
         g.setColor(eggOutline);
-        g.drawPolygon(eggPolygon);
+        // g.drawPolygon(eggPolygon);
+        graphicsUtils.drawThickPolygonOutline(g, eggPolygon, 2);
 
         drawCracks(g, elapsed);
         
@@ -233,7 +235,8 @@ public class Egg extends JPanel {
         
         // Draw outline using Polygon
         g.setColor(eggOutline);
-        g.drawPolygon(backEggPolygon);
+        // g.drawPolygon(backEggPolygon);
+        graphicsUtils.drawThickPolygonOutline(g, backEggPolygon, 2);
     }
 
     private Polygon createBackEggPolygon() {

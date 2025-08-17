@@ -195,11 +195,51 @@ public class GraphicsUtils {
         plot(g, xc - x, yc + y,3); 
     }
 
-        public void plotEllipse(Graphics g, int xc, int yc, int x, int y) {
+    public void plotEllipse(Graphics g, int xc, int yc, int x, int y) {
         plot(g, xc + x, yc + y,3);
         plot(g, xc + x, yc - y,3);
         plot(g, xc - x, yc - y,3);
         plot(g, xc - x, yc + y,3); 
     }
+       // Draw thick polygon outline using Bresenham algorithm
+    public void drawThickPolygonOutline(Graphics g, Polygon polygon, int thickness) {
+        int[] xPoints = polygon.xpoints;
+        int[] yPoints = polygon.ypoints;
+        int nPoints = polygon.npoints;
+        
+        // Draw multiple lines for thickness
+        for (int i = 0; i < nPoints; i++) {
+            int x1 = xPoints[i];
+            int y1 = yPoints[i];
+            int x2 = xPoints[(i + 1) % nPoints];
+            int y2 = yPoints[(i + 1) % nPoints];
+            
+            // Draw thick line by drawing multiple parallel lines
+            drawThickLine(g, x1, y1, x2, y2, thickness);
+        }
+    }
+    
+    // Draw thick line using multiple Bresenham lines
+    public void drawThickLine(Graphics g, int x1, int y1, int x2, int y2, int thickness) {
+        // Calculate perpendicular direction for thickness
+        int dx = x2 - x1;
+        int dy = y2 - y1;
+        double length = Math.sqrt(dx * dx + dy * dy);
+        
+        if (length == 0) return;
+        
+        // Perpendicular unit vector
+        double perpX = -dy / length;
+        double perpY = dx / length;
+        
+        // Draw multiple parallel lines
+        int halfThickness = thickness / 2;
+        for (int i = -halfThickness; i <= halfThickness; i++) {
+            int offsetX = (int)(i * perpX);
+            int offsetY = (int)(i * perpY);
+            bresenhamLine(g, x1 + offsetX, y1 + offsetY, x2 + offsetX, y2 + offsetY);
+        }
+    }
+
 
 }
