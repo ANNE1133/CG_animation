@@ -2,8 +2,10 @@ package cake;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.List;
 
 public class GraphicsUtils {
     
@@ -123,7 +125,7 @@ public class GraphicsUtils {
             D += 2 * dy;
         }
     }
-    private void midpointCircle(Graphics g, int xc, int yc, int r) {
+    public void midpointCircle(Graphics g, int xc, int yc, int r) {
         int x = 0;
         int y = r;
         int Dx = 2 * x;
@@ -145,7 +147,7 @@ public class GraphicsUtils {
         }
     }
 
-    private void midpointEllipse(Graphics g, int xc, int yc, int a, int b) {
+    public void midpointEllipse(Graphics g, int xc, int yc, int a, int b) {
         int a2 = a*a, b2 = b*b;
         int twoA2 = 2*a2, twoB2 = 2*b2;
 
@@ -240,6 +242,53 @@ public class GraphicsUtils {
             bresenhamLine(g, x1 + offsetX, y1 + offsetY, x2 + offsetX, y2 + offsetY);
         }
     }
+    public void myFillRect(Graphics g, int x, int y, int width, int height) {
+        for (int i = y; i < y + height; i++)
+            bresenhamLine(g, x, i, x + width, i);
+    }
 
+    public void myDrawRect(Graphics g, int x, int y, int width, int height, int thickness) {
+        drawThickLine(g, x, y, x + width, y, thickness);
+        drawThickLine(g, x, y + height, x + width, y + height, thickness);
+        drawThickLine(g, x, y, x, y + height, thickness);
+        drawThickLine(g, x + width, y, x + width, y + height, thickness);
+    }
+    public static List<Point> getQuadraticBezierPoints(Point p0, Point p1, Point p2, int steps) {
+        List<Point> points = new ArrayList<>();
+        for (int i = 0; i <= steps; i++) {
+            double t = i / (double) steps;
 
+            double x = Math.pow(1 - t, 2) * p0.x
+                     + 2 * (1 - t) * t * p1.x
+                     + Math.pow(t, 2) * p2.x;
+
+            double y = Math.pow(1 - t, 2) * p0.y
+                     + 2 * (1 - t) * t * p1.y
+                     + Math.pow(t, 2) * p2.y;
+
+            points.add(new Point((int) x, (int) y));
+        }
+        return points;
+    }
+
+    // Cubic Bézier
+    public static List<Point> getCubicBezierPoints(Point p0, Point p1, Point p2, Point p3, int steps) {
+        List<Point> points = new ArrayList<>();
+        for (int i = 0; i <= steps; i++) {
+            double t = i / (double) steps;
+
+            double x = Math.pow(1 - t, 3) * p0.x
+                     + 3 * t * Math.pow(1 - t, 2) * p1.x
+                     + 3 * Math.pow(t, 2) * (1 - t) * p2.x
+                     + Math.pow(t, 3) * p3.x;
+
+            double y = Math.pow(1 - t, 3) * p0.y
+                     + 3 * t * Math.pow(1 - t, 2) * p1.y
+                     + 3 * Math.pow(t, 2) * (1 - t) * p2.y
+                     + Math.pow(t, 3) * p3.y;
+
+            points.add(new Point((int) x, (int) y));
+        }
+        return points;
+    }
 }

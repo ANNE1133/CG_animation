@@ -31,7 +31,7 @@ public class Egg extends JPanel {
         this.cat = new Cat();
         this.graphicsUtils = new GraphicsUtils();
         
-        Timer timer = new Timer(30, e -> repaint());
+        Timer timer = new Timer(16, e -> repaint());
         timer.start();
     }
 
@@ -276,18 +276,18 @@ public class Egg extends JPanel {
         }
     }
     
-    private void drawEggOutline(Graphics2D g) {
-        g.setColor(eggOutline);
-        g.setStroke(new BasicStroke(3));
+    // private void drawEggOutline(Graphics2D g) {
+    //     g.setColor(eggOutline);
+    //     g.setStroke(new BasicStroke(3));
         
-        graphicsUtils.quadraticBezier(g, new Point(237, 214), new Point(299, 151), new Point(372, 213));
-        graphicsUtils.quadraticBezier(g, new Point(371, 213), new Point(415, 250), new Point(430, 304));
-        graphicsUtils.quadraticBezier(g, new Point(429, 304), new Point(446, 356), new Point(439, 396));
-        graphicsUtils.quadraticBezier(g, new Point(439, 395), new Point(436, 447), new Point(386, 489));
-        graphicsUtils.quadraticBezier(g, new Point(229, 493), new Point(305, 545), new Point(387, 488));
-        graphicsUtils.quadraticBezier(g, new Point(168, 395), new Point(173, 455), new Point(229, 493));
-        graphicsUtils.quadraticBezier(g, new Point(237, 214), new Point(154, 283), new Point(168, 396));
-    }
+    //     graphicsUtils.quadraticBezier(g, new Point(237, 214), new Point(299, 151), new Point(372, 213));
+    //     graphicsUtils.quadraticBezier(g, new Point(371, 213), new Point(415, 250), new Point(430, 304));
+    //     graphicsUtils.quadraticBezier(g, new Point(429, 304), new Point(446, 356), new Point(439, 396));
+    //     graphicsUtils.quadraticBezier(g, new Point(439, 395), new Point(436, 447), new Point(386, 489));
+    //     graphicsUtils.quadraticBezier(g, new Point(229, 493), new Point(305, 545), new Point(387, 488));
+    //     graphicsUtils.quadraticBezier(g, new Point(168, 395), new Point(173, 455), new Point(229, 493));
+    //     graphicsUtils.quadraticBezier(g, new Point(237, 214), new Point(154, 283), new Point(168, 396));
+    // }
     
     // private void drawCracks(Graphics2D g, long elapsed) {
     //     int totalTime = 3000;
