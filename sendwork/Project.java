@@ -373,26 +373,26 @@ class Background extends JPanel implements ActionListener {
 		g.dispose();
 	}
 
-    // Cubic Bézier
-    public static List<Point> getBezierPoints(Point p0, Point p1, Point p2, Point p3, int steps) {
-        List<Point> points = new ArrayList<>();
-        for (int i = 0; i <= steps; i++) {
-            double t = i / (double) steps;
+    // // Cubic Bézier
+    // public static List<Point> getBezierPoints(Point p0, Point p1, Point p2, Point p3, int steps) {
+    //     List<Point> points = new ArrayList<>();
+    //     for (int i = 0; i <= steps; i++) {
+    //         double t = i / (double) steps;
 
-            double x = Math.pow(1 - t, 3) * p0.x
-                     + 3 * t * Math.pow(1 - t, 2) * p1.x
-                     + 3 * Math.pow(t, 2) * (1 - t) * p2.x
-                     + Math.pow(t, 3) * p3.x;
+    //         double x = Math.pow(1 - t, 3) * p0.x
+    //                  + 3 * t * Math.pow(1 - t, 2) * p1.x
+    //                  + 3 * Math.pow(t, 2) * (1 - t) * p2.x
+    //                  + Math.pow(t, 3) * p3.x;
 
-            double y = Math.pow(1 - t, 3) * p0.y
-                     + 3 * t * Math.pow(1 - t, 2) * p1.y
-                     + 3 * Math.pow(t, 2) * (1 - t) * p2.y
-                     + Math.pow(t, 3) * p3.y;
+    //         double y = Math.pow(1 - t, 3) * p0.y
+    //                  + 3 * t * Math.pow(1 - t, 2) * p1.y
+    //                  + 3 * Math.pow(t, 2) * (1 - t) * p2.y
+    //                  + Math.pow(t, 3) * p3.y;
 
-            points.add(new Point((int) x, (int) y));
-        }
-        return points;
-    }
+    //         points.add(new Point((int) x, (int) y));
+    //     }
+    //     return points;
+    // }
 
 	private void drawChandeliersAndSconces(Graphics2D g) {
         // Generate flame buffer each frame for animation
@@ -474,8 +474,8 @@ class Background extends JPanel implements ActionListener {
         Point p5 = new Point((int)(fx - size * 0.5), (int)(fy - size * 0.2));
         
         // Add bezier curve points to outline
-        flameOutline.addAll(getBezierPoints(p0, p1, p2, p3, 30));
-        flameOutline.addAll(getBezierPoints(p3, p4, p5, p0, 30));
+        flameOutline.addAll(utils.getCubicBezierPoints(p0, p1, p2, p3, 30));
+        flameOutline.addAll(utils.getCubicBezierPoints(p3, p4, p5, p0, 30));
         
         // Draw flame outline
         for (int i = 0; i < flameOutline.size() - 1; i++) {
@@ -506,19 +506,24 @@ class Background extends JPanel implements ActionListener {
 }
 
 class Egg extends JPanel {
-    // Colors
-    private final Color eggOutline = new Color(91, 33, 20);
-    private final Color eggFill = new Color(253, 217, 146);
-    private final Color eggInside = new Color(251, 211, 140);
-    private final Color eggDetail = new Color(235, 165, 76);
-    private final Color eggBack = new Color(203, 156, 102);
-    private final Color eggLine = new Color(255, 232, 159);
+    //Colors
+    private final Color eggOutline = new Color(91, 33, 20);   //สีขอบไข่
+    private final Color eggFill = new Color(253, 217, 146);   //สีพื้นไข่
+    private final Color eggInside = new Color(251, 211, 140); //สีด้านในไข่
+    private final Color eggDetail = new Color(235, 165, 76);  //สีรายละเอียดบนไข่
+    private final Color eggBack = new Color(203, 156, 102);   //สีไข่ด้านหลัง
+    private final Color eggLine = new Color(255, 232, 159);   //shadow บนไข่
     
-    // Animation
-    private final long startTime;
-    private final List<Point[]> crackSegments;
+    //Animation
+    private final long startTime; 
+    private final List<Point[]> crackSegments; //เก็บsegmentรอยแตก
+
     private Cat cat;
     private final GraphicsUtils graphicsUtils;
+
+    private enum AnimationPhase {
+        SWINGING, CRACKING, OPENING, CAT_EMERGED
+    }
     
     public Egg() {
         setPreferredSize(new Dimension(600, 600));
@@ -528,7 +533,7 @@ class Egg extends JPanel {
         this.cat = new Cat();
         this.graphicsUtils = new GraphicsUtils();
         
-        Timer timer = new Timer(16, e -> repaint());
+        Timer timer = new Timer(33, e -> repaint());
         timer.start();
     }
 
@@ -543,8 +548,9 @@ class Egg extends JPanel {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         long elapsed = System.currentTimeMillis() - startTime;
-        AnimationPhase phase = getCurrentPhase(elapsed);
+        AnimationPhase phase = getCurrentPhase(elapsed); //ตรวจสอบ phase ปัจจุบัน
         
+        //วาดแต่ละ phase ตามเวลา
         switch (phase) {
             case SWINGING:
                 drawWholeEgg(g2, buffer, getSwingAngle(elapsed));
@@ -569,14 +575,16 @@ class Egg extends JPanel {
         g2.dispose();
         g2d.drawImage(buffer, 0, 0, null);
     }
-    
+
+    //คืนค่า phase ของ animation ตาม elapsed
     private AnimationPhase getCurrentPhase(long elapsed) {
         if (elapsed < 1000) return AnimationPhase.SWINGING;
         if (elapsed < 5000) return AnimationPhase.CRACKING;
         if (elapsed < 8000) return AnimationPhase.OPENING;
         return AnimationPhase.CAT_EMERGED;
     }
-    
+
+    //คำนวณมุมของไข่ใน phase SWINGING
     private double getSwingAngle(long elapsed) {
         if (elapsed < 3900) {
             return Math.sin(elapsed * 0.003) * Math.PI / 20;
@@ -584,83 +592,67 @@ class Egg extends JPanel {
         return 0;
     }
 
+    //วาดไข่ทั้งฟองแบบยังไม่แตก
     public void drawWholeEgg(Graphics2D g, BufferedImage buffer, double angle) {
         int pivotX = 305;
         int pivotY = 490;
         
         AffineTransform originalTransform = g.getTransform();
         g.rotate(angle, pivotX, pivotY);
-        
-        // Create egg shape using Polygon
+
         Polygon eggPolygon = createEggPolygon();
-        
-        // Fill egg using Polygon
         g.setColor(eggFill);
         g.fillPolygon(eggPolygon);
 
-        shadowEggCustom(g, buffer);
+        shadowEggCustom(g, buffer); //วาดเงาบนไข่
         
-        // Draw outline using Polygon
         g.setColor(eggOutline);
-        // g.drawPolygon(eggPolygon);
-        graphicsUtils.drawThickPolygonOutline(g, eggPolygon, 2);
+        graphicsUtils.drawThickPolygonOutline(g, eggPolygon, 2); //วาดขอบไข่
         
         g.setTransform(originalTransform);
     }
-        
+    
+    //สร้าง Polygon ของไข่
     private Polygon createEggPolygon() {
         Polygon polygon = new Polygon();
-        
-        // Create egg shape using bezier curves and convert to polygon points
         List<Point> points = new ArrayList<>();
-        
-        // Add points from bezier curves
-        addBezierPointsToList(points, new Point(237, 214), new Point(299, 151), new Point(372, 213));
-        addBezierPointsToList(points, new Point(372, 213), new Point(415, 250), new Point(430, 304));
-        addBezierPointsToList(points, new Point(430, 304), new Point(446, 356), new Point(439, 396));
-        addBezierPointsToList(points, new Point(439, 396), new Point(436, 447), new Point(386, 489));
-        addBezierPointsToList(points, new Point(386, 489), new Point(305, 545), new Point(229, 493));
-        addBezierPointsToList(points, new Point(229, 493), new Point(173, 455), new Point(168, 395));
-        addBezierPointsToList(points, new Point(168, 395), new Point(154, 283), new Point(237, 214));
+
+        graphicsUtils.addBezierPointsToList(points, new Point(237, 214), new Point(299, 151), new Point(372, 213));
+        graphicsUtils.addBezierPointsToList(points, new Point(372, 213), new Point(415, 250), new Point(430, 304));
+        graphicsUtils.addBezierPointsToList(points, new Point(430, 304), new Point(446, 356), new Point(439, 396));
+        graphicsUtils.addBezierPointsToList(points, new Point(439, 396), new Point(436, 447), new Point(386, 489));
+        graphicsUtils.addBezierPointsToList(points, new Point(386, 489), new Point(305, 545), new Point(229, 493));
+        graphicsUtils.addBezierPointsToList(points, new Point(229, 493), new Point(173, 455), new Point(168, 395));
+        graphicsUtils.addBezierPointsToList(points, new Point(168, 395), new Point(154, 283), new Point(237, 214));
         
         for (Point p : points) {
             polygon.addPoint(p.x, p.y);
         }
-        
         return polygon;
     }
-
-    private void addBezierPointsToList(List<Point> points, Point p0, Point p1, Point p2) {
-        for (double t = 0; t <= 1; t += 0.02) {
-            double x = (1-t)*(1-t)*p0.x + 2*(1-t)*t*p1.x + t*t*p2.x;
-            double y = (1-t)*(1-t)*p0.y + 2*(1-t)*t*p1.y + t*t*p2.y;
-            points.add(new Point((int)Math.round(x), (int)Math.round(y)));
-        }
-    }
     
+    //วาดเงาบนไข่
     private void shadowEggCustom(Graphics2D g, BufferedImage buffer) {
-        // Create shadow area using Polygon
         Polygon shadowPolygon = new Polygon();
         List<Point> shadowPoints = new ArrayList<>();
         
-        addBezierPointsToList(shadowPoints, new Point(240, 265), new Point(228, 261), new Point(240, 240));
-        addBezierPointsToList(shadowPoints, new Point(240, 240), new Point(253, 218), new Point(271, 227));
-        addBezierPointsToList(shadowPoints, new Point(271, 227), new Point(265, 242), new Point(260, 256));
-        addBezierPointsToList(shadowPoints, new Point(260, 256), new Point(250, 267), new Point(240, 265));
+        graphicsUtils.addBezierPointsToList(shadowPoints, new Point(240, 265), new Point(228, 261), new Point(240, 240));
+        graphicsUtils.addBezierPointsToList(shadowPoints, new Point(240, 240), new Point(253, 218), new Point(271, 227));
+        graphicsUtils.addBezierPointsToList(shadowPoints, new Point(271, 227), new Point(265, 242), new Point(260, 256));
+        graphicsUtils.addBezierPointsToList(shadowPoints, new Point(260, 256), new Point(250, 267), new Point(240, 265));
         
         for (Point p : shadowPoints) {
             shadowPolygon.addPoint(p.x, p.y);
         }
-        
-        // Fill shadow area using Polygon
+
         g.setColor(eggLine);
         g.fillPolygon(shadowPolygon);
-        
-        // Draw small shadow circle using midpoint algorithm
+
         g.setColor(eggLine);
-        graphicsUtils.plotCircle(g, 231, 273, 4, 0); // Using existing midpoint circle method
+        graphicsUtils.midpointCircle(g, 231, 273, 3); 
     }
 
+    //วาดไข่ที่เริ่มแตก
     private void drawCrackedEgg(Graphics2D g, long elapsed, BufferedImage buffer, double angle) {
         int pivotX = 305;
         int pivotY = 490;
@@ -668,7 +660,6 @@ class Egg extends JPanel {
         AffineTransform originalTransform = g.getTransform();
         g.rotate(angle, pivotX, pivotY);
         
-                // Draw egg shape using Polygon
         Polygon eggPolygon = createEggPolygon();
         g.setColor(eggFill);
         g.fillPolygon(eggPolygon);
@@ -676,16 +667,17 @@ class Egg extends JPanel {
         shadowEggCustom(g, buffer);
         
         g.setColor(eggOutline);
-        // g.drawPolygon(eggPolygon);
+
         graphicsUtils.drawThickPolygonOutline(g, eggPolygon, 2);
 
-        drawCracks(g, elapsed);
+        drawCracks(g, elapsed);//วาดรอยแตกตามเวลา
         
         g.setTransform(originalTransform);
     }
-    
+
+    // วาดเปลือกของไข่ที่กำลังเปิดออก ใช้ elapsed ในการคำนวณการเลื่อนของเปลือกขึ้นบน
     private void drawOpenedEgg(Graphics2D g, long elapsed, BufferedImage buffer) {
-        int moveAmount = (int) Math.min((elapsed - 5000) / 5.0, 400);
+        int moveAmount = (int) Math.min((elapsed - 5000) / 5.0, 400);//คำนวณระยะเลื่อนตามเวลา elapsed ไม่เกิน 400 pixel
 
         BufferedImage topBuffer = new BufferedImage(601, 601, BufferedImage.TYPE_INT_ARGB);
         Graphics2D gTop = topBuffer.createGraphics();
@@ -696,7 +688,7 @@ class Egg extends JPanel {
         
         g.drawImage(topBuffer, 0, -moveAmount, null);
     }
-    
+    // วาดด้านล่างของไข่เป็น overlay ใช้เพื่อให้อยู่ด้านหน้าเมื่อ phase OPENING แล้ว CAT_EMERGED
     private void drawBottomHalfEggOverlay(Graphics2D g, BufferedImage buffer) {
         BufferedImage bottomBuffer = new BufferedImage(601, 601, BufferedImage.TYPE_INT_ARGB);
         Graphics2D gBottom = bottomBuffer.createGraphics();
@@ -708,58 +700,41 @@ class Egg extends JPanel {
         g.drawImage(bottomBuffer, 0, 0, null);
     }
     
+     //วาดด้านหลังไข่เมื่อ phase OPENING
     private void drawBackEgg(Graphics2D g, BufferedImage buffer) {
-        // g.setColor(eggOutline);
-        // g.setStroke(new BasicStroke(3));
-
-        // drawCracks(g, Long.MAX_VALUE);
-        
-        // graphicsUtils.quadraticBezier(g, new Point(181, 297), new Point(194, 320), new Point(200, 328));
-        // graphicsUtils.quadraticBezier(g, new Point(199, 328), new Point(226, 301), new Point(241, 299));
-        // graphicsUtils.quadraticBezier(g, new Point(425, 291), new Point(399, 315), new Point(395, 324));
-        // graphicsUtils.quadraticBezier(g, new Point(395, 324), new Point(373, 296), new Point(347, 297));
-        // g.drawLine(240, 299, 348, 297);
-        
-        // graphicsUtils.floodFill(buffer, 390, 332, Color.WHITE, eggBack);
         Polygon backEggPolygon = createBackEggPolygon();
-        
-        // Fill back egg using Polygon
         g.setColor(eggBack);
         g.fillPolygon(backEggPolygon);
-        
-        // Draw cracks
-        drawCracks(g, Long.MAX_VALUE);
-        
-        // Draw outline using Polygon
+
+        drawCracks(g, Long.MAX_VALUE);//วาดรอยแตกทั้งหมด
         g.setColor(eggOutline);
-        // g.drawPolygon(backEggPolygon);
         graphicsUtils.drawThickPolygonOutline(g, backEggPolygon, 2);
     }
 
+    //สร้างรอยของไข่ด้านหลัง
     private Polygon createBackEggPolygon() {
         Polygon polygon = new Polygon();
         List<Point> points = new ArrayList<>();
-        
-        // Convert the complex back egg path to discrete points using bezier
-        addBezierPointsToList(points, new Point(314, 440), new Point(148, 490), new Point(181, 297));
+
+        graphicsUtils.addBezierPointsToList(points, new Point(314, 440), new Point(148, 490), new Point(181, 297));
         points.add(new Point(200, 328));
-        addBezierPointsToList(points, new Point(199, 328), new Point(226, 301), new Point(241, 299));
+        graphicsUtils.addBezierPointsToList(points, new Point(199, 328), new Point(226, 301), new Point(241, 299));
         points.add(new Point(240, 299));
         points.add(new Point(348, 297));
         points.add(new Point(347, 297));
-        addBezierPointsToList(points, new Point(347, 297), new Point(373, 296), new Point(395, 324));
-        addBezierPointsToList(points, new Point(395, 324), new Point(399, 315), new Point(425, 291));
+        graphicsUtils.addBezierPointsToList(points, new Point(347, 297), new Point(373, 296), new Point(395, 324));
+        graphicsUtils.addBezierPointsToList(points, new Point(395, 324), new Point(399, 315), new Point(425, 291));
         points.add(new Point(425, 292));
-        addBezierPointsToList(points, new Point(425, 292), new Point(449, 436), new Point(313, 441));
+        graphicsUtils.addBezierPointsToList(points, new Point(425, 292), new Point(449, 436), new Point(313, 441));
         points.add(new Point(314, 440));
         
         for (Point p : points) {
             polygon.addPoint(p.x, p.y);
         }
-        
         return polygon;
     }
-    
+
+    //วาดรอยแตกของไข่ ตาม elapsed
     private void drawCracks(Graphics2D g, long elapsed) {
         int totalTime = 3000;
         int segmentsToShow = (int)((elapsed - 1000) / (float)totalTime * crackSegments.size());
@@ -768,40 +743,12 @@ class Egg extends JPanel {
         g.setColor(eggOutline);
         for (int i = 0; i < segmentsToShow; i++) {
             Point[] seg = crackSegments.get(i);
-            // Use Bresenham line algorithm from GraphicsUtils
             graphicsUtils.bresenhamLine(g, seg[0].x, seg[0].y, seg[1].x, seg[1].y);
         }
     }
-    
-    // private void drawEggOutline(Graphics2D g) {
-    //     g.setColor(eggOutline);
-    //     g.setStroke(new BasicStroke(3));
-        
-    //     graphicsUtils.quadraticBezier(g, new Point(237, 214), new Point(299, 151), new Point(372, 213));
-    //     graphicsUtils.quadraticBezier(g, new Point(371, 213), new Point(415, 250), new Point(430, 304));
-    //     graphicsUtils.quadraticBezier(g, new Point(429, 304), new Point(446, 356), new Point(439, 396));
-    //     graphicsUtils.quadraticBezier(g, new Point(439, 395), new Point(436, 447), new Point(386, 489));
-    //     graphicsUtils.quadraticBezier(g, new Point(229, 493), new Point(305, 545), new Point(387, 488));
-    //     graphicsUtils.quadraticBezier(g, new Point(168, 395), new Point(173, 455), new Point(229, 493));
-    //     graphicsUtils.quadraticBezier(g, new Point(237, 214), new Point(154, 283), new Point(168, 396));
-    // }
-    
-    // private void drawCracks(Graphics2D g, long elapsed) {
-    //     int totalTime = 3000;
-    //     int segmentsToShow = (int)((elapsed - 1000) / (float)totalTime * crackSegments.size());
-    //     segmentsToShow = Math.min(segmentsToShow, crackSegments.size());
-
-    //     g.setColor(eggOutline);
-    //     g.setStroke(new BasicStroke(3));
-    //     for (int i = 0; i < segmentsToShow; i++) {
-    //         Point[] seg = crackSegments.get(i);
-    //         g.drawLine(seg[0].x, seg[0].y, seg[1].x, seg[1].y);
-    //     }
-    // }
-    
+    // วาดด้านบนของไข่ใน phase OPENING
     private void drawTopHalfEgg(Graphics2D g, BufferedImage buffer) {
         g.setColor(eggOutline);
-        // g.setStroke(new BasicStroke(3));
         
         graphicsUtils.quadraticBezier(g, new Point(237, 214), new Point(299, 151), new Point(372, 213));
         graphicsUtils.quadraticBezier(g, new Point(237, 214), new Point(202, 242), new Point(181, 296));
@@ -813,10 +760,9 @@ class Egg extends JPanel {
         shadowEggCustom(g, buffer);
     }
 
-    
+    //วาดด้านล่างของไข่ และรายละเอียดด้านใน
     private void drawBottomHalfEgg(Graphics2D g, BufferedImage buffer) {
         g.setColor(eggOutline);
-        // g.setStroke(new BasicStroke(3));
         
         graphicsUtils.quadraticBezier(g, new Point(229, 493), new Point(305, 545), new Point(387, 488));
         graphicsUtils.quadraticBezier(g, new Point(168, 395), new Point(173, 455), new Point(229, 493));
@@ -826,13 +772,7 @@ class Egg extends JPanel {
         graphicsUtils.quadraticBezier(g, new Point(429, 304), new Point(446, 356), new Point(439, 396));
         
         drawCracks(g, Long.MAX_VALUE);
-        
-        // g.setColor(eggInside);
-        // graphicsUtils.quadraticBezier(g, new Point(174, 419), new Point(303, 536), new Point(364, 382));
-        // graphicsUtils.floodFill(buffer, 177, 381, new Color(0, 0, 0, 0), eggInside);
 
-        // drawEggDetails(g);
-        // graphicsUtils.floodFill(buffer, 191, 445, new Color(0, 0, 0, 0), eggFill);
         g.setColor(eggInside);
         graphicsUtils.quadraticBezier(g, new Point(174, 419), new Point(303, 536), new Point(364, 382));
         graphicsUtils.floodFill(buffer, 177, 381, new Color(0, 0, 0, 0), eggInside);
@@ -841,6 +781,7 @@ class Egg extends JPanel {
         drawEggDetails(g);
     }
     
+    //วาดรอยร้าวบนไข่
     private void drawEggDetails(Graphics2D g) {
         g.setColor(eggDetail);
         g.setStroke(new BasicStroke(3));
@@ -852,7 +793,8 @@ class Egg extends JPanel {
         graphicsUtils.bresenhamLine(g, 377, 407, 382, 423);
         graphicsUtils.quadraticBezier(g, new Point(356, 427), new Point(360, 431), new Point(360, 443));
     }
-    
+
+    //segment ของรอยแตก
     private List<Point[]> initCrackSegments() {
         List<Point[]> segments = new ArrayList<>();
         
@@ -869,12 +811,6 @@ class Egg extends JPanel {
         
         return segments;
     }
-
-    private enum AnimationPhase {
-        SWINGING, CRACKING, OPENING, CAT_EMERGED
-    }
-
-	
 }
 
 class Cat {
@@ -895,7 +831,7 @@ class Cat {
     public Cat() {
         this.graphicsUtils = new GraphicsUtils();
     }
-    
+    // วาดแมวที่โผล่ออกมาจากไข่ ใช้ elapsed การโผล่
     public void drawCatEmerging(Graphics2D g, long elapsed, BufferedImage buffer) {
         long catEmergeDuration = 3000;
         long catStartTime = elapsed - 5000;
@@ -910,47 +846,43 @@ class Cat {
         Graphics2D gCat = catBuffer.createGraphics();
         gCat.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
+        //วาดลาย, ตัว, และใบหน้าแมวลง buffer
         drawStripes(gCat, catBuffer);
         drawCatBody(gCat, catBuffer);
         drawCatFace(gCat, catBuffer);
         gCat.dispose();
         
+        //กำหนด clip เพื่อให้แมวโผล่แค่ส่วนบน
         Shape originalClip = g.getClip();
         Rectangle clipRect = new Rectangle(0, 0, 600, 600 - currentOffset);
         g.setClip(clipRect);
         g.drawImage(catBuffer, 0, currentOffset, null);
         g.setClip(originalClip);
     }
-    
-    public void drawHands(Graphics2D g, BufferedImage buffer) {
-        drawLeftHand(g, buffer);
-        drawRightHand(g, buffer);
-    }
-    
+
+    //วาดหน้าแมว
     private void drawCatFace(Graphics2D g, BufferedImage buffer) {
-        // Eyes using Polygon instead of fillOval
-        Polygon leftEye = createEllipsePolygon(224, 240, 26, 34);
-        Polygon rightEye = createEllipsePolygon(303, 247, 30, 36);
+        // วาดตา
+        Polygon leftEye = graphicsUtils.createEllipsePolygon(224, 240, 26, 34);
+        Polygon rightEye = graphicsUtils.createEllipsePolygon(303, 247, 30, 36);
         
         g.setColor(eyeColor);
         g.fillPolygon(leftEye);
         g.fillPolygon(rightEye);
         
-        // Eye highlights using Polygon
-        Polygon leftHighlight = createEllipsePolygon(230, 249, 4, 6);
-        Polygon rightHighlight = createEllipsePolygon(309, 256, 6, 6);
+        Polygon leftHighlight = graphicsUtils.createEllipsePolygon(230, 249, 4, 6);
+        Polygon rightHighlight = graphicsUtils.createEllipsePolygon(309, 256, 6, 6);
         
         g.setColor(Color.WHITE);
         g.fillPolygon(leftHighlight);
         g.fillPolygon(rightHighlight);
-
-        // Eyebrows using quadratic bezier
+        
         g.setColor(catOutline);
         graphicsUtils.quadraticBezier(g, new Point(231, 218), new Point(236, 211), new Point(243, 215));
         graphicsUtils.quadraticBezier(g, new Point(319, 221), new Point(329, 216), new Point(332, 226));
         
-        // Mouth area using Polygon
-        Polygon mouthAreaPolygon = createEllipsePolygon(242, 266, 55, 47);
+        //วาดพื้นที่ปาก
+        Polygon mouthAreaPolygon = graphicsUtils.createEllipsePolygon(242, 266, 55, 47);
         g.setColor(mouthArea);
         g.fillPolygon(mouthAreaPolygon);
 
@@ -959,24 +891,8 @@ class Cat {
         drawEars(g, buffer);
         drawWhiskers(g);
     }
-        // Create ellipse as polygon using midpoint ellipse algorithm concept
-    private Polygon createEllipsePolygon(int x, int y, int width, int height) {
-        Polygon polygon = new Polygon();
-        int centerX = x + width / 2;
-        int centerY = y + height / 2;
-        int a = width / 2;
-        int b = height / 2;
-        
-        // Generate ellipse points
-        for (double angle = 0; angle < 2 * Math.PI; angle += 0.1) {
-            int px = (int)(centerX + a * Math.cos(angle));
-            int py = (int)(centerY + b * Math.sin(angle));
-            polygon.addPoint(px, py);
-        }
-        
-        return polygon;
-    }
     
+    //วาดปากแมว
     private void drawMouth(Graphics2D g) {
         g.setColor(catOutline);
         graphicsUtils.quadraticBezier(g, new Point(287, 294), new Point(276, 305), new Point(268, 293));
@@ -984,6 +900,7 @@ class Cat {
         graphicsUtils.quadraticBezier(g, new Point(253, 290), new Point(258, 298), new Point(264, 296));
     }
     
+    //วาดจมูกแมว
     private void drawNose(Graphics2D g, BufferedImage buffer) {
         g.setColor(catOutline);
         graphicsUtils.quadraticBezier(g, new Point(259, 274), new Point(265, 270), new Point(277, 274));
@@ -993,6 +910,7 @@ class Cat {
         graphicsUtils.floodFill(buffer, 268, 277, mouthArea, nose);
     }
     
+    //วาดหูแมว 
     private void drawEars(Graphics2D g, BufferedImage buffer) {
         g.setColor(catOutline);
         graphicsUtils.quadraticBezier(g, new Point(240, 179), new Point(250, 179), new Point(224, 150));
@@ -1001,7 +919,7 @@ class Cat {
         g.setColor(earInner);
         graphicsUtils.quadraticBezier(g, new Point(220, 196), new Point(228, 182), new Point(240, 179));
         graphicsUtils.quadraticBezier(g, new Point(352, 188), new Point(372, 198), new Point(380, 219));
-
+        
         g.setColor(earDetail);
         graphicsUtils.quadraticBezier(g, new Point(220, 196), new Point(211, 213), new Point(213, 175));
         graphicsUtils.quadraticBezier(g, new Point(213, 175), new Point(214, 142), new Point(224, 150));
@@ -1011,6 +929,7 @@ class Cat {
         graphicsUtils.floodFill(buffer, 377, 185, mainFur, earDetail);
     }
     
+    //วาดลายแมว
     private void drawStripes(Graphics2D g, BufferedImage buffer) {
         g.setColor(stripe);
         
@@ -1039,7 +958,6 @@ class Cat {
         graphicsUtils.bresenhamLine(g, 189, 255, 189, 263);
         graphicsUtils.quadraticBezier(g, new Point(195, 230), new Point(191, 234), new Point(193, 239));
         
-        // Fill stripe areas
         graphicsUtils.floodFill(buffer, 263, 186, new Color(0, 0, 0, 0), stripe);
         graphicsUtils.floodFill(buffer, 285, 198, new Color(0, 0, 0, 0), stripe);
         graphicsUtils.floodFill(buffer, 310, 197, new Color(0, 0, 0, 0), stripe);
@@ -1052,6 +970,7 @@ class Cat {
         graphicsUtils.floodFill(buffer, 371, 356, new Color(0, 0, 0, 0), stripe);
     }
     
+    //วาดหนวดแมว
     private void drawWhiskers(Graphics2D g) {
         g.setColor(catOutline);
         graphicsUtils.quadraticBezier(g, new Point(165, 255), new Point(187, 254), new Point(198, 263));
@@ -1060,6 +979,7 @@ class Cat {
         graphicsUtils.quadraticBezier(g, new Point(350, 297), new Point(382, 305), new Point(394, 324));
     }
     
+    //วาดตัวแมว
     private void drawCatBody(Graphics2D g, BufferedImage buffer) {
         g.setColor(catOutline);
         
@@ -1080,6 +1000,13 @@ class Cat {
         graphicsUtils.floodFill(buffer, 285, 232, new Color(0, 0, 0, 0), mainFur);
     }
     
+    //วาดมือทั้งสองข้างของแมว
+    public void drawHands(Graphics2D g, BufferedImage buffer) {
+        drawLeftHand(g, buffer);
+        drawRightHand(g, buffer);
+    }
+
+    //วาดมือซ้าย
     private void drawLeftHand(Graphics2D g, BufferedImage buffer) {
         BufferedImage handLBuffer = new BufferedImage(601, 601, BufferedImage.TYPE_INT_ARGB);
         Graphics2D gHandL = handLBuffer.createGraphics();
@@ -1091,7 +1018,8 @@ class Cat {
         gHandL.dispose();
         g.drawImage(handLBuffer, 0, 0, null);
     }
-    
+
+    //วาดมือขวา
     private void drawRightHand(Graphics2D g, BufferedImage buffer) {
         BufferedImage handRBuffer = new BufferedImage(601, 601, BufferedImage.TYPE_INT_ARGB);
         Graphics2D gHandR = handRBuffer.createGraphics();
@@ -1103,7 +1031,8 @@ class Cat {
         gHandR.dispose();
         g.drawImage(handRBuffer, 0, 0, null);
     }
-    
+
+    //วาดรายละเอียดมือ
     private void drawHandDetails(Graphics2D g, BufferedImage buffer, boolean isLeft) {
         g.setColor(catOutline);
         
@@ -1136,8 +1065,10 @@ class Cat {
     }
 }
 
+//รวม method ในการวาด
 class GraphicsUtils {
     
+    //วาดเส้น Quadratic Bezier curve(มี 3 จุด)
     public void quadraticBezier(Graphics g, Point p1, Point p2, Point p3) {
         for (int i = 0; i <= 1000; i++) {
             double t = i / 1000.0;
@@ -1148,7 +1079,8 @@ class GraphicsUtils {
             plot(g, (int)x, (int)y, 3);
         }
     }
-    
+
+    //วาดเส้น Cubic Bezier curve (มี 4 จุด)
     public void drawBezier(Graphics g, Point p0, Point p1, Point p2, Point p3) {
         for (int i = 0; i <= 1000; i++) {
             double t = i / 1000.0;
@@ -1167,10 +1099,12 @@ class GraphicsUtils {
         }
     }
     
+    //plot จุด 
     private void plot(Graphics g, int x, int y, int size) {
         g.fillRect(x, y, size, size);
     }
     
+    //ทำ Flood Fill ลงสี
     public BufferedImage floodFill(BufferedImage m, int x, int y, Color target, Color replacement) {
         int targetRGB = target.getRGB();
         int replacementRGB = replacement.getRGB();
@@ -1214,6 +1148,7 @@ class GraphicsUtils {
         return m;
     }
 
+    //วาดเส้นตรง
     public void bresenhamLine(Graphics g, int x1, int y1, int x2, int y2) {
         int dx = Math.abs(x2 - x1);
         int dy = Math.abs(y2 - y1);
@@ -1254,6 +1189,8 @@ class GraphicsUtils {
             D += 2 * dy;
         }
     }
+
+    //วาดวงกลม
     public void midpointCircle(Graphics g, int xc, int yc, int r) {
         int x = 0;
         int y = r;
@@ -1276,6 +1213,7 @@ class GraphicsUtils {
         }
     }
 
+    //วาดวงรี
     public void midpointEllipse(Graphics g, int xc, int yc, int a, int b) {
         int a2 = a*a, b2 = b*b;
         int twoA2 = 2*a2, twoB2 = 2*b2;
@@ -1315,6 +1253,7 @@ class GraphicsUtils {
         }
     }
 
+    //plot จุดสมมาตร 8 จุดของวงกลม
     public void plotCircle(Graphics g, int xc, int yc, int x, int y) {
         plot(g, xc + x, yc + y,3);
         plot(g, xc + y, yc + x,3);
@@ -1326,44 +1265,41 @@ class GraphicsUtils {
         plot(g, xc - x, yc + y,3); 
     }
 
+    //plot จุดสมมาตร 4 จุดของวงรี
     public void plotEllipse(Graphics g, int xc, int yc, int x, int y) {
         plot(g, xc + x, yc + y,3);
         plot(g, xc + x, yc - y,3);
         plot(g, xc - x, yc - y,3);
         plot(g, xc - x, yc + y,3); 
     }
-       // Draw thick polygon outline using Bresenham algorithm
+   
+    //วาดด้านนอกของ polygon ให้หนาขึ้น(จะใช้ Bresenham + drawThickLine)
     public void drawThickPolygonOutline(Graphics g, Polygon polygon, int thickness) {
         int[] xPoints = polygon.xpoints;
         int[] yPoints = polygon.ypoints;
         int nPoints = polygon.npoints;
-        
-        // Draw multiple lines for thickness
+
         for (int i = 0; i < nPoints; i++) {
             int x1 = xPoints[i];
             int y1 = yPoints[i];
             int x2 = xPoints[(i + 1) % nPoints];
             int y2 = yPoints[(i + 1) % nPoints];
-            
-            // Draw thick line by drawing multiple parallel lines
+
             drawThickLine(g, x1, y1, x2, y2, thickness);
         }
     }
     
-    // Draw thick line using multiple Bresenham lines
+    //วาดเส้นตรงแบบหนา โดยเลื่อนเส้นขนานกัน
     public void drawThickLine(Graphics g, int x1, int y1, int x2, int y2, int thickness) {
-        // Calculate perpendicular direction for thickness
         int dx = x2 - x1;
         int dy = y2 - y1;
         double length = Math.sqrt(dx * dx + dy * dy);
         
         if (length == 0) return;
         
-        // Perpendicular unit vector
         double perpX = -dy / length;
         double perpY = dx / length;
-        
-        // Draw multiple parallel lines
+
         int halfThickness = thickness / 2;
         for (int i = -halfThickness; i <= halfThickness; i++) {
             int offsetX = (int)(i * perpX);
@@ -1371,36 +1307,31 @@ class GraphicsUtils {
             bresenhamLine(g, x1 + offsetX, y1 + offsetY, x2 + offsetX, y2 + offsetY);
         }
     }
+
+    //เติมสี่เหลี่ยม (fill rect) ด้วยการวาดเส้นแนวนอนทีละบรรทัด
     public void myFillRect(Graphics g, int x, int y, int width, int height) {
         for (int i = y; i < y + height; i++)
             bresenhamLine(g, x, i, x + width, i);
     }
 
+    //วาดกรอบสี่เหลี่ยมแบบหนา โดยใช้ drawThickLine ทั้ง 4 ด้าน
     public void myDrawRect(Graphics g, int x, int y, int width, int height, int thickness) {
         drawThickLine(g, x, y, x + width, y, thickness);
         drawThickLine(g, x, y + height, x + width, y + height, thickness);
         drawThickLine(g, x, y, x, y + height, thickness);
         drawThickLine(g, x + width, y, x + width, y + height, thickness);
     }
-    public static List<Point> getQuadraticBezierPoints(Point p0, Point p1, Point p2, int steps) {
-        List<Point> points = new ArrayList<>();
-        for (int i = 0; i <= steps; i++) {
-            double t = i / (double) steps;
 
-            double x = Math.pow(1 - t, 2) * p0.x
-                     + 2 * (1 - t) * t * p1.x
-                     + Math.pow(t, 2) * p2.x;
-
-            double y = Math.pow(1 - t, 2) * p0.y
-                     + 2 * (1 - t) * t * p1.y
-                     + Math.pow(t, 2) * p2.y;
-
-            points.add(new Point((int) x, (int) y));
+    //แปลง Bezier เป็น list ของจุดสำหรับ polygon
+    public void addBezierPointsToList(List<Point> points, Point p0, Point p1, Point p2) {
+        for (double t = 0; t <= 1; t += 0.02) {
+            double x = (1-t)*(1-t)*p0.x + 2*(1-t)*t*p1.x + t*t*p2.x;
+            double y = (1-t)*(1-t)*p0.y + 2*(1-t)*t*p1.y + t*t*p2.y;
+            points.add(new Point((int)Math.round(x), (int)Math.round(y)));
         }
-        return points;
     }
 
-    // Cubic Bézier
+    //คืนค่า list ของจุดจาก cubic Bezier
     public static List<Point> getCubicBezierPoints(Point p0, Point p1, Point p2, Point p3, int steps) {
         List<Point> points = new ArrayList<>();
         for (int i = 0; i <= steps; i++) {
@@ -1419,5 +1350,21 @@ class GraphicsUtils {
             points.add(new Point((int) x, (int) y));
         }
         return points;
+    }
+
+    //สร้างรูป ellipse โดย Polygon 
+    public Polygon createEllipsePolygon(int x, int y, int width, int height) {
+        Polygon polygon = new Polygon();
+        int centerX = x + width / 2;
+        int centerY = y + height / 2;
+        int a = width / 2;
+        int b = height / 2;
+        
+        for (double angle = 0; angle < 2 * Math.PI; angle += 0.1) {
+            int px = (int)(centerX + a * Math.cos(angle));
+            int py = (int)(centerY + b * Math.sin(angle));
+            polygon.addPoint(px, py);
+        }
+        return polygon;
     }
 }
