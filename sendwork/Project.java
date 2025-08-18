@@ -113,18 +113,16 @@ class Background extends JPanel implements ActionListener {
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 
-        draw(g2d);
+		//drawcomponaint
+        drawWall(g2d); //กำแพง
+        drawFloor(g2d); //พื้น
+        drawCarpet(g2d); //พรม
+        drawWindow(g2d); //หน้าต่าง
+        drawCurtain(g2d); //ม่าน
+        drawChandeliersAndSconces(g2d); //โคมแขวน
     }
 
-	public void draw(Graphics2D g) {
-        drawWall(g); //กำแพง
-        drawFloor(g); //พื้น
-        drawCarpet(g); //พรม
-        drawWindow(g); //หน้าต่าง
-        drawCurtain(g); //ม่าน
-        drawChandeliersAndSconces(g); //โคมแขวน
-    }
-
+	//sub method for Stroke Rectangle
 	private void drawStrokedRect(Graphics2D g2d, int x, int y, int width, int height, Color strokeColor, int strokeWidth) {
 		g2d.setColor(strokeColor);
 		utils.myDrawRect(g2d, x, y, width, height,strokeWidth);
@@ -155,7 +153,7 @@ class Background extends JPanel implements ActionListener {
 		drawStrokedRect(g,153, 305, 113, 67, wallLine, 3);
 		drawStrokedRect(g,511, 305, 89, 67, wallLine, 3);
 
-		//first
+		//first curve rectangle
         int x = 153; int y = 79; int width = 266-x; int height = 261-y;
         int cornerDepth = 20; // How deep the curve goes in
 
@@ -168,7 +166,7 @@ class Background extends JPanel implements ActionListener {
 		utils.bresenhamLine(g,x, y+height-cornerDepth , x, y + cornerDepth);
 		utils.quadraticBezier(g, new Point(x, y + cornerDepth), new Point(x+cornerDepth, y+cornerDepth ), new Point(x+cornerDepth, y));
 
-		//second
+		//second curve rectangle
         x = 511; y = 79; width = 113; height = 261-y;
 		utils.bresenhamLine(g,x + cornerDepth, y, x + width - cornerDepth, y);
 		utils.quadraticBezier(g, new Point(x + width - cornerDepth, y), new Point(x+width-cornerDepth, y+cornerDepth), new Point(x+width, y+cornerDepth));
@@ -200,7 +198,6 @@ class Background extends JPanel implements ActionListener {
 
 			// 2. Draw the main line
 			g.setColor(groutColor);
-			// utils.drawThickLine(g,0, y+ currentShadowOffset-5, 600, y+ currentShadowOffset-5,1);
 			utils.bresenhamLine(g,0, y+ currentShadowOffset-5, 600, y+ currentShadowOffset-5);
 			i++;
 		}
@@ -219,7 +216,6 @@ class Background extends JPanel implements ActionListener {
 
 			// 2. Draw the main line
 			g.setColor(groutColor);
-			// utils.drawThickLine(g,335, 0,  x +currentShadowOffset -5, 600,1);
 			utils.bresenhamLine(g,335, 0,  x +currentShadowOffset -5, 600);
 			i++; // Increment the counter for the next line's shadow -> more realistic
 		}
@@ -227,41 +223,32 @@ class Background extends JPanel implements ActionListener {
 	}
 
 	private void drawCarpet(Graphics2D g) {
+		Color mainCarpet = new Color(180, 50, 40);
+		Color BorderCarpet = new Color(127, 46, 17);
 		if (!carpetRendered) {
 			// Only create carpet buffer once
 			carpetBuffer = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
 			Graphics2D tempG2d = carpetBuffer.createGraphics();
-			
-			Color mainCarpet = new Color(180, 50, 40);
-			Color BorderCarpet = new Color(127, 46, 17);
 			int xc = 300;
 			int yc = 575;
 			int rx = 350;
 			int ry = 100;
 			
 			// Clear the buffer
-			tempG2d.setColor(target); // Assuming target is transparent
+			tempG2d.setColor(target);
 			utils.myFillRect(tempG2d, 0, 0, carpetBuffer.getWidth(), carpetBuffer.getHeight());
 
 			// Draw border
 			tempG2d.setColor(BorderCarpet);
 			utils.midpointEllipse(tempG2d, xc, yc, rx, ry);
 			
-			// Fill carpet (use the same buffer for flood fill)
+			// Fill carpet
 			tempG2d.setColor(mainCarpet);
 			utils.floodFill(carpetBuffer, xc, yc, target, mainCarpet);
 			
-			// Add decorative ellipses
-			// utils.midpointEllipse(tempG2d, xc, yc, rx, ry, new Color(127, 46, 17, 50), 10);
-			// utils.midpointEllipse(tempG2d, xc+10, yc+10, rx, ry, new Color(168, 52, 18, 50), 20);
-			utils.midpointEllipse(tempG2d, xc+10, yc+10, rx, ry);
-			
-
 			tempG2d.dispose();
 			carpetRendered = true;
 		}
-		
-		// Draw the cached buffer
 		g.drawImage(carpetBuffer, 0, 0, null);
 	}
 	
@@ -269,13 +256,14 @@ class Background extends JPanel implements ActionListener {
 		// Window dimensions and position
 		int[] xPoints = {0, 115, 115, 0};
 		int[] yPoints = {0, 17, 405, 438};
-
+		//Wall
 		g.setColor(wall); 
 		g.fillPolygon(xPoints, yPoints, 4);
 		g.setStroke(new BasicStroke(1.5f));
 		g.setColor(Color.darkGray);
 		g.drawPolygon(xPoints, yPoints, 4);
 
+		//border of wall
 		int[] x1 = {0, 115, 115, 0};
 		int[] y1 = {0, 17, 30, 13};
 		g.setColor(wallLine); 
@@ -284,6 +272,7 @@ class Background extends JPanel implements ActionListener {
 		g.setColor(Color.darkGray);
 		g.drawPolygon(x1, y1, 4);
 
+		//border winndow
 		int[] x2 = {0, 115, 115, 0};
 		int[] y2 = {425, 392, 405, 438};
 		g.setColor(new Color(55, 61, 71)); 
@@ -292,37 +281,45 @@ class Background extends JPanel implements ActionListener {
 		g.setColor(Color.darkGray);
 		g.drawPolygon(x2, y2, 4);
 		
+		//fill glass of window
 		g.setColor(glassColor);
 		int[] x3 = {10,105,105, 10};
 		int[] y3 = {60, 70, 310, 335};
 		g.fillPolygon(x3, y3, 4); 
 
+		//draw each cell of windpow
 		g.setColor(gridColor);
 		g.setStroke(new BasicStroke(3));
 		g.drawPolygon(x3, y3, 4); 
 
+		//draw each cell of windpow
 		int frameThickness = 11;
 		g.setColor(frameColor);
 		g.setStroke(new BasicStroke(frameThickness));
 		g.drawPolygon(x3, y3, 4);
-		g.setColor(gridColor);
-		int[] x31 = {15,100,100, 15};
-		int[] y31 = {65, 75, 305, 330};
-		g.setStroke(new BasicStroke(3));
-		g.drawPolygon(x31, y31, 4);
 
+		//draw subwindow
+		g.setColor(gridColor);
+		int[] x3_1 = {15,100,100, 15};
+		int[] y3_1 = {65, 75, 305, 330};
+		g.setStroke(new BasicStroke(3));
+		g.drawPolygon(x3_1, y3_1, 4);
+
+		//draw subwindow
 		int[] x4 = {20,95,95, 20};
 		int[] y4 = {140, 145, 305, 325};
 		g.setColor(frameColor);
 		g.setStroke(new BasicStroke(frameThickness));
 		g.drawPolygon(x4, y4, 4);
 
+		//draw subwindow
 		int[] x5 = {15,100,100, 15};
 		int[] y5 = {135, 140, 305, 330};
 		g.setColor(gridColor);
 		g.setStroke(new BasicStroke(3));
 		g.drawPolygon(x5, y5, 4); 
 		
+		//draw line on window
 		g.setColor(gridColor);
 		utils.drawThickLine(g, 50, 145, 50, 312, 1);
 		utils.drawThickLine(g, 60, 145, 60, 312, 1);
@@ -336,14 +333,14 @@ class Background extends JPanel implements ActionListener {
 	private void drawCurtain(Graphics2D g2) {
 		BufferedImage curtainBuffer = new BufferedImage(601, 601, BufferedImage.TYPE_INT_ARGB);
     	Graphics2D g = curtainBuffer.createGraphics();
+		Color baseColor = new Color(180, 50, 40);
+		Color borderCurtain = new Color(150, 0, 0);
 		 // วาดราวแขวนผ้าม่าน
 		g.setColor(new Color(100, 70, 50));
 		utils.drawThickLine(g,0, 0, 115, 18,5);
 
 		// วาดผ้าม่านด้านซ้าย
-		Color baseColor = new Color(180, 50, 40);
-		// g.setColor(baseColor);
-		g.setColor(new Color(150, 0, 0));
+		g.setColor(borderCurtain);
 		utils.bresenhamLine(g, 0, 0, 60, 11);
 		utils.quadraticBezier(g, new Point(60, 11), new Point(70, 90), new Point(0, 220));
 
@@ -351,29 +348,25 @@ class Background extends JPanel implements ActionListener {
 		utils.bresenhamLine(g, 60, 11,115, 18 );
 		utils.quadraticBezier(g, new Point(115, 18), new Point(130,135), new Point(115, 250));
 		utils.quadraticBezier(g, new Point(115, 250), new Point(55, 115), new Point(60, 12));
-
 		utils.quadraticBezier(g, new Point(111, 262), new Point(90, 370), new Point(93, 398));
 		utils.quadraticBezier(g, new Point(93, 398), new Point(113, 388), new Point(118, 401));
 		utils.quadraticBezier(g, new Point(118, 401), new Point(135, 420), new Point(148, 404));
 		utils.quadraticBezier(g, new Point(148, 404), new Point(122, 260), new Point(120, 261));
 
-
-		// วาดวงกลมแบบมีสีเติม
+		// วาดวงกลม
 		utils.midpointEllipse(g,115, 250, 10, 10);
-		// utils.midpointEllipse(g, 115, 250, 10, 10, new Color(150, 0, 0), 3);    
-		    // Color baseColor = new Color(180, 50, 40);
-		Color bgColor = new Color(0,0,0,0); // pixel โปร่งใส
-		utils.floodFill(curtainBuffer, 110, 95, bgColor, baseColor);
-		utils.floodFill(curtainBuffer, 34, 68, bgColor, baseColor);
-		utils.floodFill(curtainBuffer, 120, 250, bgColor, new Color(150, 0, 0));
-		utils.floodFill(curtainBuffer, 113, 322, bgColor, baseColor);
+		//target คือ สีใส
+		utils.floodFill(curtainBuffer, 110, 95, target, baseColor);
+		utils.floodFill(curtainBuffer, 34, 68, target, baseColor);
+		utils.floodFill(curtainBuffer, 120, 250, target, baseColor);
+		utils.floodFill(curtainBuffer, 113, 322, target, baseColor);
 
 		// วาด buffer ลงจอจริง
 		g2.drawImage(curtainBuffer, 0, 0, null);
 		g.dispose();
 	}
 
-    // Cubic Bézier
+    // find bezier point
     public static List<Point> getBezierPoints(Point p0, Point p1, Point p2, Point p3, int steps) {
         List<Point> points = new ArrayList<>();
         for (int i = 0; i <= steps; i++) {
@@ -419,10 +412,10 @@ class Background extends JPanel implements ActionListener {
         g.drawImage(flameBuffer, 0, 0, null);
     }
 
+	//draw chandelier candle base and arm
     private void drawChandelier(Graphics2D g, Graphics2D flameG2d, int x, int y, int arms, int seed) {
         // Draw chandelier structure to main graphics
         g.setColor(new Color(187, 74, 10));
-        // utils.fillEllipse(g, x, y - 5, 8, 5,new Color(187, 74, 10));
         utils.myFillRect(g, x-3, y-10, 6, 35);
 
         int armLen = 40;
@@ -445,8 +438,6 @@ class Background extends JPanel implements ActionListener {
             // Candle base
             g.setColor(new Color(255, 193, 5));
             utils.myFillRect(g, ax-6, ay+8, 12, 18);
-            // g.setColor(new Color(125, 59, 18));
-            // utils.myDrawRect(g, ax-6, ay+8, 12, 18, 1);
 
             // Draw flame to flame buffer with flood fill
             drawFlameToBuffer(flameG2d, ax, ay, 12, i);
@@ -455,13 +446,15 @@ class Background extends JPanel implements ActionListener {
 
     private void drawFlameToBuffer(Graphics2D flameG2d, int x, int y, int size, int flameIndex) {
         float seed = flameSeeds[flameIndex % flameSeeds.length];
-        float currentTime = time; // Use class time instead of AnimationTime
+        float currentTime = time; 
         float jitter = (float)(Math.sin(currentTime * 10 + seed * 5.0) * 3.0);
         int fx = x;
         int fy = y - 6 + (int)jitter;
+		Color flameYellow = new Color(255,193,5);
+		Color flameColor = new Color(255, 200, 80);
 
         // Create flame outline for flood fill
-        flameG2d.setColor(new Color(255,193,5)); // Outline color
+        flameG2d.setColor(flameYellow);
         
         List<Point> flameOutline = new ArrayList<>();
         
@@ -492,7 +485,6 @@ class Background extends JPanel implements ActionListener {
         }
         
         // Flood fill with gradient effect (use base color first)
-        Color flameColor = new Color(255, 200, 80);
         flameG2d.setColor(flameColor);
         utils.floodFill(flameBuffer, fx, fy, target, flameColor);
         
