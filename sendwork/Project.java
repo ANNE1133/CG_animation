@@ -59,11 +59,7 @@ public class Project {
         });
     }
 }
-/**
- * This Class draws the background include the chandelier 
- * and it will initiate in The Project
- * @param g The Graphics2D object to draw on.
- */
+
 class Background extends JPanel implements ActionListener {
     //colors 
 	private final Color bgColor = new Color(144, 80, 39);
@@ -120,6 +116,7 @@ class Background extends JPanel implements ActionListener {
         drawWindow(g2d); //หน้าต่าง
         drawCurtain(g2d); //ม่าน
         drawChandeliersAndSconces(g2d); //โคมแขวน
+		drawChair(g2d);
     }
 
 	//sub method for Stroke Rectangle
@@ -330,6 +327,65 @@ class Background extends JPanel implements ActionListener {
 		utils.drawThickLine(g, 55, 145, 55, 312, frameThickness);
 	}
 
+	private void drawChair(Graphics2D g2){
+		BufferedImage curtainBuffer = new BufferedImage(601, 601, BufferedImage.TYPE_INT_ARGB);
+    	Graphics2D g = curtainBuffer.createGraphics();
+		
+		Color cushion = new Color(99,62,86);
+		Color borderChair = new Color(110,40,12);
+		Color wood = new Color(164, 67, 8);
+		
+		g.setColor(borderChair);
+		//down cushion
+		utils.drawBezier(g, new Point(0, 366),new Point(20, 375), new Point(10, 395), new Point(15, 399));
+		utils.bresenhamLine(g, 15,399, 0, 400);
+		utils.bresenhamLine(g, 0,400, 0, 366);
+		//sitwood
+		utils.bresenhamLine(g, 0,401, 85, 401);
+		utils.drawBezier(g, new Point(85,401),new Point(105,401), new Point(105,411), new Point(85,411));
+		utils.bresenhamLine(g, 85,411, 0, 411);
+		utils.bresenhamLine(g, 0,401, 0, 411);
+		//curve wood 
+		utils.bresenhamLine(g,28,399,17, 399);
+		utils.drawBezier(g, new Point(0, 353),new Point(33, 365), new Point(23, 390), new Point(28, 399));
+		utils.drawBezier(g, new Point(17,399),new Point(10, 395), new Point(20, 375), new Point(0, 366));
+		//cushion
+		utils.bresenhamLine(g,0,290,0,411);
+		utils.quadraticBezier(g, new Point(0,290), new Point(35,300), new Point(37,348));
+		utils.quadraticBezier(g, new Point(37,348), new Point(104,335), new Point(87,380));
+		utils.quadraticBezier(g, new Point(87,380), new Point(90,370), new Point(82,376));
+		utils.quadraticBezier(g, new Point(82,376), new Point(79,370), new Point(80,384));
+		utils.quadraticBezier(g, new Point(80,384), new Point(105,395), new Point(93,401));
+		utils.bresenhamLine(g, 93, 401, 30, 400);
+		utils.drawBezier(g,new Point(30, 400), new Point(23, 390), new Point(33, 365), new Point(0, 353));
+		//chairleg
+		utils.bresenhamLine(g, 17, 412, 17, 440);
+		utils.drawBezier(g, new Point(17,440),new Point(19, 450), new Point(25, 450), new Point(27, 440));
+		utils.bresenhamLine(g, 27, 440, 27, 412);
+		//chairleg 2
+		utils.bresenhamLine(g, 80, 412, 80, 440);
+		utils.drawBezier(g,new Point(80, 440), new Point(84, 450), new Point(88, 450), new Point(90, 440));
+		utils.bresenhamLine(g, 90, 440, 90, 412);
+		utils.bresenhamLine(g, 90, 412, 80, 412);
+
+		//wood
+		utils.floodFill(curtainBuffer, 20, 420, target, wood);
+		utils.floodFill(curtainBuffer, 85, 430, target, wood);
+		utils.floodFill(curtainBuffer, 20, 380, target, wood);
+		utils.floodFill(curtainBuffer, 60, 405, target, wood);
+
+		utils.floodFill(curtainBuffer, 7, 380, target, cushion);
+		utils.floodFill(curtainBuffer, 30, 340, target, cushion);
+		// วาด buffer ลงจอจริง
+
+		g.setColor(borderChair);
+		utils.quadraticBezier(g, new Point(30,371),new Point(33,352),  new Point(37,348));
+		utils.quadraticBezier(g, new Point(80,378),new Point(67,364),  new Point(74,352));
+		utils.quadraticBezier(g, new Point(23, 373),new Point(61,370),  new Point(79,380));
+		utils.quadraticBezier(g, new Point(25, 385),new Point(105,384),  new Point(93,401));
+		g2.drawImage(curtainBuffer, 0, 0, null);
+		g2.dispose();
+	}
 	private void drawCurtain(Graphics2D g2) {
 		BufferedImage curtainBuffer = new BufferedImage(601, 601, BufferedImage.TYPE_INT_ARGB);
     	Graphics2D g = curtainBuffer.createGraphics();
@@ -358,7 +414,7 @@ class Background extends JPanel implements ActionListener {
 		//target คือ สีใส
 		utils.floodFill(curtainBuffer, 110, 95, target, baseColor);
 		utils.floodFill(curtainBuffer, 34, 68, target, baseColor);
-		utils.floodFill(curtainBuffer, 120, 250, target, baseColor);
+		utils.floodFill(curtainBuffer, 120, 250, target, borderCurtain);
 		utils.floodFill(curtainBuffer, 113, 322, target, baseColor);
 
 		// วาด buffer ลงจอจริง
@@ -366,26 +422,26 @@ class Background extends JPanel implements ActionListener {
 		g.dispose();
 	}
 
-    // // Cubic Bézier
-    // public static List<Point> getBezierPoints(Point p0, Point p1, Point p2, Point p3, int steps) {
-    //     List<Point> points = new ArrayList<>();
-    //     for (int i = 0; i <= steps; i++) {
-    //         double t = i / (double) steps;
+    // Cubic Bézier
+    public static List<Point> getBezierPoints(Point p0, Point p1, Point p2, Point p3, int steps) {
+        List<Point> points = new ArrayList<>();
+        for (int i = 0; i <= steps; i++) {
+            double t = i / (double) steps;
 
-    //         double x = Math.pow(1 - t, 3) * p0.x
-    //                  + 3 * t * Math.pow(1 - t, 2) * p1.x
-    //                  + 3 * Math.pow(t, 2) * (1 - t) * p2.x
-    //                  + Math.pow(t, 3) * p3.x;
+            double x = Math.pow(1 - t, 3) * p0.x
+                     + 3 * t * Math.pow(1 - t, 2) * p1.x
+                     + 3 * Math.pow(t, 2) * (1 - t) * p2.x
+                     + Math.pow(t, 3) * p3.x;
 
-    //         double y = Math.pow(1 - t, 3) * p0.y
-    //                  + 3 * t * Math.pow(1 - t, 2) * p1.y
-    //                  + 3 * Math.pow(t, 2) * (1 - t) * p2.y
-    //                  + Math.pow(t, 3) * p3.y;
+            double y = Math.pow(1 - t, 3) * p0.y
+                     + 3 * t * Math.pow(1 - t, 2) * p1.y
+                     + 3 * Math.pow(t, 2) * (1 - t) * p2.y
+                     + Math.pow(t, 3) * p3.y;
 
-    //         points.add(new Point((int) x, (int) y));
-    //     }
-    //     return points;
-    // }
+            points.add(new Point((int) x, (int) y));
+        }
+        return points;
+    }
 
 	private void drawChandeliersAndSconces(Graphics2D g) {
         // Generate flame buffer each frame for animation
